@@ -17,7 +17,8 @@ public class Bitxo1 extends Agent {
     private Estat estat;
     private Random random;           
     private Accio accio;
-    private int repetir;
+    private int repetir, darrer_gir;
+    private boolean mirant;
 
     public Bitxo1(Agents pare) {
         super(pare, "Lift", "imatges/robotank1.gif");
@@ -31,6 +32,7 @@ public class Bitxo1 extends Agent {
         // Inicialització de variables que utilitzaré al meu comportament
         repetir = 0;
         accio = Accio.ENDAVANT;
+        mirant = false;
         random = new Random();
     }
 
@@ -45,16 +47,19 @@ public class Bitxo1 extends Agent {
     
     private void deteccioParet(){
         if(estat.enCollisio){
-            accio = Accio.ENRERE;
+            accio = Accio.VOLTEJ;
             repetir = 1;
-        }else if(estat.distanciaVisors[CENTRAL] < 30 && estat.objecteVisor[CENTRAL] == PARET){
+        }else if(estat.distanciaVisors[CENTRAL] < 30 &&
+                estat.objecteVisor[CENTRAL] == PARET){
             if(random.nextBoolean()) accio = Accio.DRETA;
             else accio = Accio.ESQUERRA;
             repetir = 3;    
-        } else if (estat.distanciaVisors[ESQUERRA] < 40 && estat.objecteVisor[ESQUERRA] == PARET){
+        } else if (estat.distanciaVisors[ESQUERRA] < 40 &&
+                estat.objecteVisor[ESQUERRA] == PARET){
             accio = Accio.DRETA;
             repetir = 3;
-        } else if (estat.distanciaVisors[DRETA] < 40 && estat.objecteVisor[DRETA] == PARET){
+        } else if (estat.distanciaVisors[DRETA] < 40 &&
+                estat.objecteVisor[DRETA] == PARET){
             accio = Accio.ESQUERRA;
             repetir = 3;
         } else {
@@ -67,43 +72,57 @@ public class Bitxo1 extends Agent {
             int distanciaMin = Integer.MAX_VALUE;
             Objecte obj = null;
             for(Objecte objActual: estat.objectes){
-                int distanciaObjActual;
-                if(objActual != null && objActual.agafaTipus() == (100 + estat.id) && (distanciaObjActual = objActual.agafaDistancia()) < distanciaMin){
-                    distanciaMin = distanciaObjActual;
-                    obj = objActual;
+                if(objActual != null){
+                    int distanciaObjActual = objActual.agafaDistancia();
+                    if(objActual.agafaTipus() == (100 + estat.id) &&
+                            distanciaObjActual < distanciaMin){
+                        distanciaMin = distanciaObjActual;
+                        obj = objActual;
+                    }
                 }
             }
-            mira(obj);
-        }
+            if(obj != null){
+                mira(obj);
+                mirant = true;
+            } else mirant = false;
+        } else mirant = false;
     }
     
     private boolean repetirAccio(){
         if(repetir != 0){
             switch(accio){
                 case ESQUERRA:
-                    gira(10 + random.nextInt(10)); 
+                    darrer_gir = 10 + random.nextInt(10);
                     break;
                 case DRETA:
-                    gira(-(10 + random.nextInt(10)));;
+                    darrer_gir = -(10 + random.nextInt(10));
                     break;
-                case ENRERE:
-                    enrere();
-                    if(repetir == 1) gira(180 + (random.nextInt(90) - 45));
-                    break;
-                case ENDAVANT:
-                    endavant(); 
+                case VOLTEJ:
+                    darrer_gir = 180 + (random.nextInt(90) - 45);
+                    break;  
+                case DESFER:
+                    darrer_gir = -(darrer_gir);
                     break;
             }
+            gira(darrer_gir);
+            comprobaMirant();
             repetir--;
             return true;
         } else return false;
     }
     
-    public enum Accio{
+    private void comprobaMirant(){
+        if(mirant){
+            accio = Accio.DESFER;
+            repetir = 1;
+        }
+    }
+    
+    private enum Accio{
         ESQUERRA,
         DRETA,
-        ENRERE,
-        ENDAVANT,
-        MIRANT,
+        VOLTEJ,
+        ENDAVANT, 
+        DESFER
     }
 }
