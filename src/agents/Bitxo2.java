@@ -3,7 +3,7 @@ package agents;
 import java.lang.Math;
 
 // Exemple de Bitxo
-public class Bitxo1 extends Agent {
+public class Bitxo2 extends Agent {
 
     static final int PARET = 0;
     static final int BITXO = 1;
@@ -51,7 +51,7 @@ public class Bitxo1 extends Agent {
 
     int polla = 0;
 
-    public Bitxo1(Agents pare) {
+    public Bitxo2(Agents pare) {
         super(pare, "Bitxo1", "imatges/robotank1.gif");
     }
 
@@ -86,6 +86,7 @@ public class Bitxo1 extends Agent {
             repetirAccio();
             repetir--;
         } else {
+            
             if (estat.enCollisio) {
                 atura();
                 accio = ENRERE;
@@ -148,13 +149,13 @@ public class Bitxo1 extends Agent {
         dist_recurs_Propia_Global = 9999;
         dist_recurs_Enemic_Global = 9999;
         for (Objecte o : obj) {
-            if (o != null && o.agafaTipus() == (100 + estat.id)) {
+            if (o != null && o.agafaTipus() == (101)) {
                 if (o.agafaDistancia() < dist_recurs_Propia_Global) {
                     dist_recurs_Propia_Global = o.agafaDistancia();
                     recursPropiGlobal = o;
                     heTrobatPropi = true;
                 }
-            } else if (o != null && (o.agafaTipus() >= 100) && (o.agafaTipus() != (100 + estat.id))) {
+            } else if (o != null && (o.agafaTipus() >= 100) && (o.agafaTipus() != (101))) {
                 if (o.agafaDistancia() < dist_recurs_Enemic_Global) {
                     dist_recurs_Enemic_Global = o.agafaDistancia();
                     recursEnemicGlobal = o;
