@@ -91,13 +91,18 @@ public class Bitxo1 extends Agent {
                 accio = ENRERE;
                 repetir = 5;
             } else {
-
+                atura();
                 cerca();
-                if (heTrobatEnemic && estat.llançaments > 0) {
+                //HAY QUE HACER QUE SI LO QUE ESTÁ VIENDO ES UN ENEMIGO EN VEZ DE UN RECURSO 
+                //ENEMIGO DISPARE ÚNICAMENTE SI ESTÁ A MENOS DE 150PX (P. EJE)
+                if (heTrobatEnemic && (estat.llançaments > 0)
+                        && !estat.llançant && dist_recurs_Enemic_Global < 405) { 
                     mira(recursEnemicGlobal);
                     llança();
-                } else if (heTrobatEnemic) {
+                }
+                if (heTrobatPropi) {
                     mira(recursPropiGlobal);
+                    endavant();
                 }
 
                 if (estat.distanciaVisors[ESQUERRA] < 20 && (estat.objecteVisor[ESQUERRA] == PARET)) {
@@ -154,11 +159,11 @@ public class Bitxo1 extends Agent {
                     recursPropiGlobal = o;
                     heTrobatPropi = true;
                 }
-            } else if (o != null && (o.agafaTipus() >= 100) && (o.agafaTipus() != (100 + estat.id))) {
+            } else if (o != null && ((o.agafaTipus() >= 100) && (o.agafaTipus() != (100 + estat.id)) || o.agafaTipus() == Estat.AGENT)) {
                 if (o.agafaDistancia() < dist_recurs_Enemic_Global) {
                     dist_recurs_Enemic_Global = o.agafaDistancia();
                     recursEnemicGlobal = o;
-                    heTrobatPropi = true;
+                    heTrobatEnemic = true;
                 }
             }
         }
