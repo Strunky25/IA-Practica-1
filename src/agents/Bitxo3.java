@@ -1,3 +1,4 @@
+
 package agents;
 
 /*
@@ -24,7 +25,7 @@ public class Bitxo3 extends Agent {
     private boolean mirant;
 
     public Bitxo3(Agents pare) {
-        super(pare, "Nosotros <3", "imatges/robotank1.gif");
+        super(pare, "Nosotros <3", "imatges/bobEsponja.gif");
     }
 
     @Override

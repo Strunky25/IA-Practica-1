@@ -52,7 +52,7 @@ public class Bitxo1 extends Agent {
     int polla = 0;
 
     public Bitxo1(Agents pare) {
-        super(pare, "Bitxo1", "imatges/robotank1.gif");
+        super(pare, "PEPE", "imatges/robotank1.gif");
     }
 
     @Override
