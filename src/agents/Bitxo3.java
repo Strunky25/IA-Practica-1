@@ -1,11 +1,14 @@
 package agents;
 
+// Exemple de Bitxo
+
+import java.util.Random;
+
 /*
     BITXO JONNY
 */
-import java.util.Random;
 
-public class Bitxo1 extends Agent {
+public class Bitxo3 extends Agent {
 
     static final int PARET = 0;
     static final int BITXO = 1;
@@ -15,14 +18,16 @@ public class Bitxo1 extends Agent {
     static final int CENTRAL = 1;
     static final int DRETA = 2;
 
+    private static final int MAX_VISIO = 405;
+    
     private Estat estat;
     private Random random;           
     private Accio accio;
     private int repetir, darrer_gir;
     private boolean mirant;
 
-    public Bitxo1(Agents pare) {
-        super(pare, "Jonathan", "imatges/robotank1.gif");
+    public Bitxo3(Agents pare) {
+        super(pare, "Nosotros <3", "imatges/robotank1.gif");
     }
 
     @Override
@@ -41,7 +46,7 @@ public class Bitxo1 extends Agent {
     public void avaluaComportament() {
         if(!repetirAccio()){ 
             estat = estatCombat();
-            deteccioAliment();
+            deteccioRecursos();
             deteccioParet();         
         }
     }
@@ -68,25 +73,49 @@ public class Bitxo1 extends Agent {
         }
     }
     
-    private void deteccioAliment(){
+    private void deteccioRecursos(){
         if(estat.numObjectes > 0 && estat.veigAlgunRecurs){
-            int distanciaMin = Integer.MAX_VALUE;
-            Objecte obj = null;
+            int distanciaMin = MAX_VISIO;
+            int distanciaActual;
+            int distanciaMinRecAliado = MAX_VISIO;
+            int distanciaMinRecEnemigo = MAX_VISIO;
+            Objecte objRecAliadoMasCercano = null;
+            Objecte objRecEnemigoMasCercano = null;
             for(Objecte objActual: estat.objectes){
                 if(objActual != null){
-                    int distanciaObjActual = objActual.agafaDistancia();
-                    if(objActual.agafaTipus() == (100 + estat.id) &&
-                            distanciaObjActual < distanciaMin){
-                        distanciaMin = distanciaObjActual;
-                        obj = objActual;
+                    distanciaActual = objActual.agafaDistancia();
+                    if(distanciaActual < distanciaMin){
+                        distanciaMin = distanciaActual;
+                        if(esRecursAliat(objActual)){
+                            distanciaMinRecAliado = distanciaActual;
+                            objRecAliadoMasCercano = objActual;
+                        } else if(objActual.agafaTipus() >= 100 
+                                && !esRecursAliat(objActual)){
+                            distanciaMinRecEnemigo = distanciaActual;
+                            objRecEnemigoMasCercano = objActual;
+                        }
                     }
                 }
             }
-            if(obj != null){
-                mira(obj);
+            if(distanciaMinRecEnemigo < MAX_VISIO &&
+                    estat.llançaments > 0 && !estat.llançant
+                    && objRecEnemigoMasCercano != null){
+                System.out.println(objRecEnemigoMasCercano.agafaTipus());
+                mira(objRecEnemigoMasCercano);
+                llança();
                 mirant = true;
-            } else mirant = false;
+            }
+            /*
+            if(distanciaMinRecAliado < MAX_VISIO 
+                    && objRecAliadoMasCercano != null){
+                mira(objRecAliadoMasCercano);
+                mirant = true;
+            } else mirant = false;*/
         } else mirant = false;
+    }
+    
+    private boolean esRecursAliat(Objecte obj){
+        return obj.agafaTipus() == (100 + estat.id);
     }
     
     private boolean repetirAccio(){
