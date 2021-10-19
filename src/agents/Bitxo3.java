@@ -1,4 +1,3 @@
-
 package agents;
 
 /*
@@ -16,10 +15,10 @@ public class Bitxo3 extends Agent {
     static final int CENTRAL = 1;
     static final int DRETA = 2;
 
-    private static final int MAX_VISIO = 405;
-    
+    private static final int MAX_DIST_BALES = 405; //RENAME de MAX_VISIO a MAX_DIST_BALES ya que este valor es la distancia máxima que puede recorrer una bala, no la vision
+
     private Estat estat;
-    private Random random;           
+    private Random random;
     private Accio accio;
     private int repetir, darrer_gir;
     private boolean mirant;
@@ -42,83 +41,89 @@ public class Bitxo3 extends Agent {
 
     @Override
     public void avaluaComportament() {
-        if(!repetirAccio()){ 
+        if (!repetirAccio()) {
             estat = estatCombat();
             deteccioRecursos();
-            deteccioParet();         
+            deteccioParet();
         }
     }
-    
-    private void deteccioParet(){
-        if(estat.enCollisio){
+
+    private void deteccioParet() {
+        if (estat.enCollisio) {
             accio = Accio.VOLTEJ;
             repetir = 1;
-        }else if(estat.distanciaVisors[CENTRAL] < 30 &&
-                estat.objecteVisor[CENTRAL] == PARET){
-            if(random.nextBoolean()) accio = Accio.DRETA;
-            else accio = Accio.ESQUERRA;
-            repetir = 3;    
-        } else if (estat.distanciaVisors[ESQUERRA] < 40 &&
-                estat.objecteVisor[ESQUERRA] == PARET){
+        } else if (estat.distanciaVisors[CENTRAL] < 30
+                && estat.objecteVisor[CENTRAL] == PARET) {
+            if (random.nextBoolean()) {
+                accio = Accio.DRETA;
+            } else {
+                accio = Accio.ESQUERRA;
+            }
+            repetir = 3;
+        } else if (estat.distanciaVisors[ESQUERRA] < 40
+                && estat.objecteVisor[ESQUERRA] == PARET) {
             accio = Accio.DRETA;
             repetir = 3;
-        } else if (estat.distanciaVisors[DRETA] < 40 &&
-                estat.objecteVisor[DRETA] == PARET){
+        } else if (estat.distanciaVisors[DRETA] < 40
+                && estat.objecteVisor[DRETA] == PARET) {
             accio = Accio.ESQUERRA;
             repetir = 3;
         } else {
             endavant();
         }
     }
-    
-    private void deteccioRecursos(){
-        if(estat.numObjectes > 0 && estat.veigAlgunRecurs){
-            int distanciaMin = MAX_VISIO;
+
+    private void deteccioRecursos() {
+        if (estat.veigAlgunRecurs) { //He quitado esto: estat.numObjectes > 0 && , ya que es redundante
+            int distanciaMin = 9999; //He cambiado MAX_DIST_BALES por 9999 porque no tenia sentido
             int distanciaActual;
-            int distanciaMinRecAliado = MAX_VISIO;
-            int distanciaMinRecEnemigo = MAX_VISIO;
+            int distanciaMinRecAliado = 99999;
+            int distanciaMinRecEnemigo = MAX_DIST_BALES; //Aquí si que se puede usar
             Objecte objRecAliadoMasCercano = null;
             Objecte objRecEnemigoMasCercano = null;
-            for(Objecte objActual: estat.objectes){
-                if(objActual != null){
+            for (Objecte objActual : estat.objectes) { //Per a cada objecte
+                if (objActual != null) {
                     distanciaActual = objActual.agafaDistancia();
-                    if(distanciaActual < distanciaMin){
-                        distanciaMin = distanciaActual;
-                        if(esRecursAliat(objActual)){
+                    if (esRecursAliat(objActual)) {
+                        if (distanciaActual < distanciaMinRecAliado) {
                             distanciaMinRecAliado = distanciaActual;
                             objRecAliadoMasCercano = objActual;
-                        } else if(objActual.agafaTipus() >= 100 
-                                && !esRecursAliat(objActual)){
+                        }
+                    } else if (objActual.agafaTipus() >= 100) {
+                        if (distanciaActual < distanciaMinRecEnemigo) {
                             distanciaMinRecEnemigo = distanciaActual;
                             objRecEnemigoMasCercano = objActual;
                         }
                     }
                 }
             }
-            if(distanciaMinRecEnemigo < MAX_VISIO &&
-                    estat.llançaments > 0 && !estat.llançant
-                    && objRecEnemigoMasCercano != null){
+            
+            if (distanciaMinRecEnemigo < MAX_DIST_BALES
+                    && estat.llançaments > 0 && !estat.llançant
+                    && objRecEnemigoMasCercano != null) {
                 System.out.println(objRecEnemigoMasCercano.agafaTipus());
                 mira(objRecEnemigoMasCercano);
                 llança();
                 mirant = true;
             }
-            /*
-            if(distanciaMinRecAliado < MAX_VISIO 
-                    && objRecAliadoMasCercano != null){
+            
+            if(objRecAliadoMasCercano != null){
                 mira(objRecAliadoMasCercano);
                 mirant = true;
-            } else mirant = false;*/
-        } else mirant = false;
+            } else mirant = false;
+            
+        } else {
+            mirant = false;
+        }
     }
-    
-    private boolean esRecursAliat(Objecte obj){
+
+    private boolean esRecursAliat(Objecte obj) {
         return obj.agafaTipus() == (100 + estat.id);
     }
-    
-    private boolean repetirAccio(){
-        if(repetir != 0){
-            switch(accio){
+
+    private boolean repetirAccio() {
+        if (repetir != 0) {
+            switch (accio) {
                 case ESQUERRA:
                     darrer_gir = 10 + random.nextInt(10);
                     break;
@@ -127,7 +132,7 @@ public class Bitxo3 extends Agent {
                     break;
                 case VOLTEJ:
                     darrer_gir = 180 + (random.nextInt(90) - 45);
-                    break;  
+                    break;
                 case DESFER:
                     darrer_gir = -(darrer_gir);
                     break;
@@ -136,21 +141,23 @@ public class Bitxo3 extends Agent {
             comprobaMirant();
             repetir--;
             return true;
-        } else return false;
+        } else {
+            return false;
+        }
     }
-    
-    private void comprobaMirant(){
-        if(mirant){
+
+    private void comprobaMirant() {
+        if (mirant) {
             accio = Accio.DESFER;
             repetir = 1;
         }
     }
-    
-    private enum Accio{
+
+    private enum Accio {
         ESQUERRA,
         DRETA,
         VOLTEJ,
-        ENDAVANT, 
+        ENDAVANT,
         DESFER
     }
 }
