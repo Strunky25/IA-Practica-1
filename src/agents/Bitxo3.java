@@ -4,8 +4,7 @@ import java.util.Random;
 
 /*
     BITXO NOSOTROS <3
-*/
-
+ */
 public class Bitxo3 extends Agent {
 
     static final int PARET = 0;
@@ -17,9 +16,9 @@ public class Bitxo3 extends Agent {
     static final int DRETA = 2;
 
     private static final int MAX_VISIO = 405;
-    
+
     private Estat estat;
-    private Random random;           
+    private Random random;
     private Accio accio;
     private int repetir, darrer_gir;
     private boolean mirant;
@@ -42,25 +41,25 @@ public class Bitxo3 extends Agent {
 
     @Override
     public void avaluaComportament() {
-        if(!repetirAccio()){ 
+        if (!repetirAccio()) {
             estat = estatCombat();
             deteccioRecursos();
-            deteccioParet();         
+            deteccioParet();
         }
     }
-    
-    private enum Accio{
+
+    private enum Accio {
         ESQUERRA,
         DRETA,
         VOLTEJ,
-        ENDAVANT, 
+        ENDAVANT,
         DESFER,
         CONTINUA
     }
-    
-    private boolean repetirAccio(){
-        if(repetir != 0){
-            switch(accio){
+
+    private boolean repetirAccio() {
+        if (repetir != 0) {
+            switch (accio) {
                 case ESQUERRA:
                     darrer_gir = 10 + random.nextInt(10);
                     break;
@@ -69,7 +68,7 @@ public class Bitxo3 extends Agent {
                     break;
                 case VOLTEJ:
                     darrer_gir = 180 + (random.nextInt(90) - 45);
-                    break;  
+                    break;
                 case DESFER:
                     darrer_gir = -(darrer_gir);
                     break;
@@ -80,19 +79,45 @@ public class Bitxo3 extends Agent {
             //comprobaMirant();
             repetir--;
             return true;
-        } else return false;
+        } else {
+            return false;
+        }
     }
-    
-    private void comprobaMirant(){
-        if(mirant){
+
+    private void comprobaMirant() {
+        if (mirant) {
             accio = Accio.DESFER;
             repetir = 1;
         }
     }
-    
-    private void deteccioRecursos(){
-        if(estat.numObjectes > 0 && estat.veigAlgunRecurs){
-            
+
+    private void deteccioRecursos() {
+        if (estat.numObjectes > 0 && estat.veigAlgunRecurs) {
+            int distActualRecAli, distMinRecAli, distActualRecEne, distMinRecEne;
+            distMinRecAli = distMinRecEne = MAX_VISIO;
+            Objecte recAliMesProper, recEneMesProper;
+            recAliMesProper = recEneMesProper = null;
+            for (Objecte objActual : estat.objectes) {
+                if (objActual != null) {
+                    if (esRecursAliat(objActual)) {
+                        distActualRecAli = objActual.agafaDistancia();
+                        if (distActualRecAli < distMinRecAli) {
+                            distMinRecAli = distActualRecAli;
+                            recAliMesProper = objActual;
+                        }
+                    } else if(objActual.agafaTipus() > 100 && !esRecursAliat(objActual)){
+                        distActualRecEne = objActual.agafaDistancia();
+                        if (distActualRecEne < distMinRecEne) {
+                            distMinRecEne = distActualRecEne;
+                            recEneMesProper = objActual;
+                        }
+                    }
+                }
+            }
+            if(recEneMesProper != null){
+                mira(recEneMesProper);
+                llança();
+            }
         }
 //            int distanciaMin = MAX_VISIO;
 //            int distanciaActual;
@@ -132,26 +157,29 @@ public class Bitxo3 extends Agent {
 //            } else mirant = false;*/
 //        } else mirant = false;
     }
-    
-    private boolean esRecursAliat(Objecte obj){
+
+    private boolean esRecursAliat(Objecte obj) {
         return obj.agafaTipus() == (100 + estat.id);
     }
-    
-    private void deteccioParet(){
-        if(estat.enCollisio){
+
+    private void deteccioParet() {
+        if (estat.enCollisio) {
             accio = Accio.VOLTEJ;
             repetir = 1;
-        }else if(estat.distanciaVisors[CENTRAL] < 30 &&
-                estat.objecteVisor[CENTRAL] == PARET){
-            if(random.nextBoolean()) accio = Accio.DRETA;
-            else accio = Accio.ESQUERRA;
-            repetir = 3;    
-        } else if (estat.distanciaVisors[ESQUERRA] < 40 &&
-                estat.objecteVisor[ESQUERRA] == PARET){
+        } else if (estat.distanciaVisors[CENTRAL] < 30
+                && estat.objecteVisor[CENTRAL] == PARET) {
+            if (random.nextBoolean()) {
+                accio = Accio.DRETA;
+            } else {
+                accio = Accio.ESQUERRA;
+            }
+            repetir = 3;
+        } else if (estat.distanciaVisors[ESQUERRA] < 40
+                && estat.objecteVisor[ESQUERRA] == PARET) {
             accio = Accio.DRETA;
             repetir = 3;
-        } else if (estat.distanciaVisors[DRETA] < 40 &&
-                estat.objecteVisor[DRETA] == PARET){
+        } else if (estat.distanciaVisors[DRETA] < 40
+                && estat.objecteVisor[DRETA] == PARET) {
             accio = Accio.ESQUERRA;
             repetir = 3;
         } else {
