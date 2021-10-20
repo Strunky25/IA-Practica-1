@@ -1,8 +1,10 @@
 package agents;
 
-import java.lang.Math;
+import java.util.Random;
 
-// Exemple de Bitxo
+/*
+    BITXO NOSOTROS <3
+ */
 public class Bitxo1 extends Agent {
 
     static final int PARET = 0;
@@ -10,82 +12,74 @@ public class Bitxo1 extends Agent {
     static final int RES = -1;
 
     static final int ESQUERRA = 0;
-    static final int ENDAVANT = 1;
     static final int CENTRAL = 1;
     static final int DRETA = 2;
-    static final int ENRERE = 3;
-    static final int DONAVOLTA = 4;
 
-    static final int ALERTA = 0;
-    static final int A = 1;
-    static final int B = 2;
+    private static final int MAX_VISIO = 405;
 
-    int repetir;
-    int accio;
-    int estatBitxo;
-    int objI;
-    boolean EsticMirant;
-    //boolean heMirat;
-    Estat estat;
-    Objecte[] obj;
-
-    //Esto nos permite encontrar el recurso nuestro mas cercano
-    Objecte recursPropiLocal;
-    Objecte recursPropiGlobal;
-    Objecte recursEnemicLocal;
-    Objecte recursEnemicGlobal;
-    int dist_recurs_Propia_Global;
-    int dist_recurs_Propia_Local;
-    int dist_recurs_Enemic_Global;
-    int dist_recurs_Enemic_Local;
-    boolean heTrobatPropi;
-    boolean heTrobatEnemic;
-
-    int sectorLocal;
-    int sectorGlobal;
-
-    int recursosActuals;
-
-    int graus;
-    int girs;
-
-    int polla = 0;
+    private Estat estat;
+    private Random random;
+    private Accio accio;
+    private int repetir, darrer_gir;
+    private boolean mirant;
 
     public Bitxo1(Agents pare) {
-        super(pare, "Bitxo1", "imatges/robotank1.gif");
+        super(pare, "Nosotros <3", "imatges/robotank1.gif");
     }
 
     @Override
     public void inicia() {
-
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        graus = 45;
-        int cost = atributsAgent(7, 9, 600, graus, 40, 5, 0);
-        System.out.println("Cost total:" + cost);
-
-        // Inicialització de variables que utilitzaré al meu comportament   
+        int cost = atributsAgent(6, 8, 600, 30, 23, 5, 5);
+        System.out.println("Cost total: " + cost);
+        // Inicialització de variables que utilitzaré al meu comportament
         repetir = 0;
-        objI = 0;
-        estatBitxo = ALERTA;
-        EsticMirant = false;
-        heTrobatPropi = false;
-        // heMirat = false;
-        sectorLocal = 0;
-        sectorGlobal = 0;
-        recursosActuals = 0;
-
-        dist_recurs_Propia_Global = 9999;
-
-        girs = 1;//(int) Math.ceil(360 / graus);
+        accio = Accio.ENDAVANT;
+        random = new Random();
     }
 
     @Override
     public void avaluaComportament() {
-        estat = estatCombat();
+        if (!repetirAccio()) {
+            estat = estatCombat();
+            deteccioRecursos();
+            deteccioParet();
+        }
+    }
+
+    private enum Accio {
+        ESQUERRA,
+        DRETA,
+        VOLTEJ,
+        ENDAVANT,
+        DESFER,
+        CONTINUA
+    }
+
+    private boolean repetirAccio() {
         if (repetir != 0) {
-            repetirAccio();
+            switch (accio) {
+                case ESQUERRA:
+                    darrer_gir = 10 + random.nextInt(10);
+                    break;
+                case DRETA:
+                    darrer_gir = -(10 + random.nextInt(10));
+                    break;
+                case VOLTEJ:
+                    darrer_gir = 180 + (random.nextInt(90) - 45);
+                    break;
+                case DESFER:
+                    darrer_gir = -(darrer_gir);
+                    break;
+                case CONTINUA:
+                    break;
+            }
+            gira(darrer_gir);
+            //comprobaMirant();
             repetir--;
+            return true;
         } else {
+<<<<<<< HEAD
             if (estat.enCollisio) {
                 atura();
                 accio = ENRERE;
@@ -104,46 +98,52 @@ public class Bitxo1 extends Agent {
                     mira(recursPropiGlobal);
                     endavant();
                 }
+=======
+            return false;
+        }
+    }
+>>>>>>> master
 
-                if (estat.distanciaVisors[ESQUERRA] < 20 && (estat.objecteVisor[ESQUERRA] == PARET)) {
-                    accio = DRETA;
-                    repetir = 1;
-                } else if (estat.distanciaVisors[DRETA] < 20 && (estat.objecteVisor[DRETA] == PARET)) {
-                    accio = ESQUERRA;
-                    repetir = 1;
+    private void deteccioRecursos() {
+        if (estat.numObjectes > 0 && estat.veigAlgunRecurs) {
+            int distActualRecAli, distMinRecAli = Integer.MAX_VALUE,
+                    distActualRecEne, distMinRecEne = MAX_VISIO;
+            Objecte recAliMesProper, recEneMesProper;
+            recAliMesProper = recEneMesProper = null;
+            for (Objecte objActual : estat.objectes) {
+                if (objActual != null) {
+                    int tipusRec = objActual.agafaTipus();
+                    if (esRecAliEsc(tipusRec)) {
+                        distActualRecAli = objActual.agafaDistancia();
+                        if (distActualRecAli < distMinRecAli) {
+                            distMinRecAli = distActualRecAli;
+                            recAliMesProper = objActual;
+                        }
+                    } else if (tipusRec > 100 && !esRecAliEsc(tipusRec)) {
+                        distActualRecEne = objActual.agafaDistancia();
+                        if (distActualRecEne < distMinRecEne) {
+                            distMinRecEne = distActualRecEne;
+                            recEneMesProper = objActual;
+                        }
+                    }
                 }
-                endavant();
+            }
+            if (recEneMesProper != null && estat.llançaments > 0 
+                    && !estat.llançant && distMinRecEne < distMinRecAli) {
+                mira(recEneMesProper);
+                llança();
+            }
+            if (recAliMesProper != null) {
+                mira(recAliMesProper);
             }
         }
     }
 
-    private void repetirAccio() {
-        switch (accio) {
-            case 0:
-                //esquerra();
-                gira(30);
-                break;
-            case 1:
-                endavant();
-                break;
-            case 2:
-                //dreta();
-                gira(-30);
-                break;
-            case 3:
-                enrere();
-                if (repetir == 1) {
-                    gira(30);
-                }
-                break;
-            case 4:
-                gira(graus * 2);
-                cerca();
-                sectorLocal++;
-                break;
-        }
+    private boolean esRecAliEsc(int tipus) {
+        return tipus == (100 + estat.id) || tipus == Estat.ESCUT;
     }
 
+<<<<<<< HEAD
     private void cerca() {
         obj = estat.objectes;
         heTrobatPropi = false;
@@ -165,7 +165,30 @@ public class Bitxo1 extends Agent {
                     recursEnemicGlobal = o;
                     heTrobatEnemic = true;
                 }
+=======
+    private void deteccioParet() {
+        if (estat.enCollisio) {
+            accio = Accio.VOLTEJ;
+            repetir = 1;
+        } else if (estat.distanciaVisors[CENTRAL] < 30
+                && estat.objecteVisor[CENTRAL] == PARET) {
+            if (random.nextBoolean()) {
+                accio = Accio.DRETA;
+            } else {
+                accio = Accio.ESQUERRA;
+>>>>>>> master
             }
+            repetir = 3;
+        } else if (estat.distanciaVisors[ESQUERRA] < 40
+                && estat.objecteVisor[ESQUERRA] == PARET) {
+            accio = Accio.DRETA;
+            repetir = 3;
+        } else if (estat.distanciaVisors[DRETA] < 40
+                && estat.objecteVisor[DRETA] == PARET) {
+            accio = Accio.ESQUERRA;
+            repetir = 3;
+        } else {
+            endavant();
         }
     }
 }
