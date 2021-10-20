@@ -83,13 +83,6 @@ public class Bitxo1 extends Agent {
         }
     }
 
-    private void comprobaMirant() {
-        if (mirant) {
-            accio = Accio.DESFER;
-            repetir = 1;
-        }
-    }
-
     private void deteccioRecursos() {
         if (estat.numObjectes > 0 && estat.veigAlgunRecurs) {
             int distActualRecAli, distMinRecAli = Integer.MAX_VALUE,
