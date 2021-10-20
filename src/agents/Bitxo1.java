@@ -2,9 +2,6 @@ package agents;
 
 import java.util.Random;
 
-/*
-    BITXO NOSOTROS <3
- */
 public class Bitxo1 extends Agent {
 
     static final int PARET = 0;
@@ -15,7 +12,7 @@ public class Bitxo1 extends Agent {
     static final int CENTRAL = 1;
     static final int DRETA = 2;
 
-    private static final int MAX_VISIO = 405;
+    private static final int MAX_DIST_BALES = 405;
 
     private Estat estat;
     private Random random;
@@ -86,7 +83,7 @@ public class Bitxo1 extends Agent {
     private void deteccioRecursos() {
         if (estat.numObjectes > 0 && estat.veigAlgunRecurs) {
             int distActualRecAli, distMinRecAli = Integer.MAX_VALUE,
-                    distActualRecEne, distMinRecEne = MAX_VISIO;
+                    distActualRecEne, distMinRecEne = MAX_DIST_BALES;
             Objecte recAliMesProper, recEneMesProper;
             recAliMesProper = recEneMesProper = null;
             for (Objecte objActual : estat.objectes) {
@@ -108,7 +105,7 @@ public class Bitxo1 extends Agent {
                 }
             }
             if (recEneMesProper != null && estat.llançaments > 0 
-                    && !estat.llançant && distMinRecEne < distMinRecAli) {
+                    && !estat.llançant && distMinRecEne < MAX_DIST_BALES) {
                 mira(recEneMesProper);
                 llança();
             }
