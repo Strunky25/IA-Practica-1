@@ -79,30 +79,9 @@ public class Bitxo1 extends Agent {
             repetir--;
             return true;
         } else {
-<<<<<<< HEAD
-            if (estat.enCollisio) {
-                atura();
-                accio = ENRERE;
-                repetir = 5;
-            } else {
-                atura();
-                cerca();
-                //HAY QUE HACER QUE SI LO QUE ESTÁ VIENDO ES UN ENEMIGO EN VEZ DE UN RECURSO 
-                //ENEMIGO DISPARE ÚNICAMENTE SI ESTÁ A MENOS DE 150PX (P. EJE)
-                if (heTrobatEnemic && (estat.llançaments > 0)
-                        && !estat.llançant && dist_recurs_Enemic_Global < 405) { 
-                    mira(recursEnemicGlobal);
-                    llança();
-                }
-                if (heTrobatPropi) {
-                    mira(recursPropiGlobal);
-                    endavant();
-                }
-=======
             return false;
         }
     }
->>>>>>> master
 
     private void deteccioRecursos() {
         if (estat.numObjectes > 0 && estat.veigAlgunRecurs) {
@@ -143,29 +122,6 @@ public class Bitxo1 extends Agent {
         return tipus == (100 + estat.id) || tipus == Estat.ESCUT;
     }
 
-<<<<<<< HEAD
-    private void cerca() {
-        obj = estat.objectes;
-        heTrobatPropi = false;
-        heTrobatEnemic = false;
-        recursPropiLocal = null;
-        recursEnemicLocal = null;
-        dist_recurs_Propia_Global = 9999;
-        dist_recurs_Enemic_Global = 9999;
-        for (Objecte o : obj) {
-            if (o != null && o.agafaTipus() == (100 + estat.id)) {
-                if (o.agafaDistancia() < dist_recurs_Propia_Global) {
-                    dist_recurs_Propia_Global = o.agafaDistancia();
-                    recursPropiGlobal = o;
-                    heTrobatPropi = true;
-                }
-            } else if (o != null && ((o.agafaTipus() >= 100) && (o.agafaTipus() != (100 + estat.id)) || o.agafaTipus() == Estat.AGENT)) {
-                if (o.agafaDistancia() < dist_recurs_Enemic_Global) {
-                    dist_recurs_Enemic_Global = o.agafaDistancia();
-                    recursEnemicGlobal = o;
-                    heTrobatEnemic = true;
-                }
-=======
     private void deteccioParet() {
         if (estat.enCollisio) {
             accio = Accio.VOLTEJ;
@@ -176,7 +132,6 @@ public class Bitxo1 extends Agent {
                 accio = Accio.DRETA;
             } else {
                 accio = Accio.ESQUERRA;
->>>>>>> master
             }
             repetir = 3;
         } else if (estat.distanciaVisors[ESQUERRA] < 40
