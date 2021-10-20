@@ -95,7 +95,7 @@ public class Bitxo1 extends Agent {
                             distMinRecAli = distActualRecAli;
                             recAliMesProper = objActual;
                         }
-                    } else if (tipusRec > 100 && !esRecAliEsc(tipusRec)) {
+                    } else if (tipusRec >= 100 || tipusRec == Estat.AGENT) {
                         distActualRecEne = objActual.agafaDistancia();
                         if (distActualRecEne < distMinRecEne) {
                             distMinRecEne = distActualRecEne;
