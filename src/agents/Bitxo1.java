@@ -59,9 +59,19 @@ public class Bitxo1 extends Agent {
     public void inicia() {
 
         // atributsAgents(v,w,dv,av,ll,es,hy)
+<<<<<<< Updated upstream
         graus = 45;
         int cost = atributsAgent(7, 9, 600, graus, 40, 5, 0);
         System.out.println("Cost total:" + cost);
+=======
+        int cost = atributsAgent(5, 6, 600, 45, 30, 0, 0);
+        System.out.println("Cost total: " + cost);
+        // Inicialització de variables que utilitzaré al meu comportament
+        repetir = 0;
+        accio = Accio.ENDAVANT;
+        mirant = false;
+        random = new Random();
+>>>>>>> Stashed changes
 
         // Inicialització de variables que utilitzaré al meu comportament   
         repetir = 0;
@@ -86,6 +96,7 @@ public class Bitxo1 extends Agent {
             repetirAccio();
             repetir--;
         } else {
+<<<<<<< Updated upstream
             if (estat.enCollisio) {
                 atura();
                 accio = ENRERE;
@@ -104,6 +115,51 @@ public class Bitxo1 extends Agent {
                     mira(recursPropiGlobal);
                     endavant();
                 }
+=======
+            endavant();
+        }
+    }
+
+    private void deteccioRecursos() {
+        if (estat.veigAlgunRecurs) { //He quitado esto: estat.numObjectes > 0 && , ya que es redundante
+            int distanciaMin = 9999; //He cambiado MAX_DIST_BALES por 9999 porque no tenia sentido
+            int distanciaActualAliado;
+            int distanciaActualEnemigo;
+
+            int distanciaMinRecAliado = 99999;
+            int distanciaMinRecEnemigo = MAX_DIST_BALES; //Aquí si que se puede usar
+
+            Objecte objRecAliadoMasCercano = null;
+            Objecte objRecEnemigoMasCercano = null;
+
+            for (Objecte objActual : estat.objectes) { //Per a cada objecte
+                if ((objActual != null) && (objActual.agafaSector() == 2 || objActual.agafaSector() == 3)) {
+                    if (esRecursAliat(objActual)) {
+                        distanciaActualAliado = objActual.agafaDistancia();
+                        if (distanciaActualAliado < distanciaMinRecAliado) {
+                            distanciaMinRecAliado = distanciaActualAliado;
+                            objRecAliadoMasCercano = objActual;
+                        }
+                    } else if (((objActual.agafaTipus() >= 100 && !esRecursAliat(objActual)) 
+                            || objActual.agafaTipus() == Estat.AGENT) && !estat.llançant) {
+                        distanciaActualEnemigo = objActual.agafaDistancia();
+                        if (distanciaActualEnemigo < distanciaMinRecEnemigo) {
+                            distanciaMinRecEnemigo = distanciaActualEnemigo;
+                            objRecEnemigoMasCercano = objActual;
+                        }
+                    } 
+                }
+            }
+
+            //Salgo de este for con el recurso/agente enemigo y aliado más cercano 
+            if (distanciaMinRecEnemigo < MAX_DIST_BALES
+                    && estat.llançaments > 0 && !estat.llançant
+                    && objRecEnemigoMasCercano != null) {
+                mira(objRecEnemigoMasCercano);
+                llança();
+                mirant = true;
+            }
+>>>>>>> Stashed changes
 
                 if (estat.distanciaVisors[ESQUERRA] < 20 && (estat.objecteVisor[ESQUERRA] == PARET)) {
                     accio = DRETA;
@@ -117,6 +173,7 @@ public class Bitxo1 extends Agent {
         }
     }
 
+<<<<<<< Updated upstream
     private void repetirAccio() {
         switch (accio) {
             case 0:
@@ -141,6 +198,34 @@ public class Bitxo1 extends Agent {
                 cerca();
                 sectorLocal++;
                 break;
+=======
+    private boolean esRecursAliat(Objecte obj) {
+        return obj.agafaTipus() == (100 + estat.id)||obj.agafaTipus() == Estat.ESCUT;
+    }
+
+    private boolean repetirAccio() {
+        if (repetir != 0) {
+            switch (accio) {
+                case ESQUERRA:
+                    darrer_gir = 10 + random.nextInt(10);
+                    break;
+                case DRETA:
+                    darrer_gir = -(10 + random.nextInt(10));
+                    break;
+                case VOLTEJ:
+                    darrer_gir = 180 + (random.nextInt(90) - 45);
+                    break;
+                case DESFER:
+                    darrer_gir = -(darrer_gir);
+                    break;
+            }
+            gira(darrer_gir);
+            comprobaMirant();
+            repetir--;
+            return true;
+        } else {
+            return false;
+>>>>>>> Stashed changes
         }
     }
 

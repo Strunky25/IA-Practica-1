@@ -15,7 +15,11 @@ public class Bitxo3 extends Agent {
     static final int CENTRAL = 1;
     static final int DRETA = 2;
 
+<<<<<<< Updated upstream
     private static final int MAX_DIST_BALES = 395; //RENAME de MAX_VISIO a MAX_DIST_BALES ya que este valor es la distancia máxima que puede recorrer una bala, no la vision
+=======
+    private static final int MAX_DIST_BALES = 405; //RENAME de MAX_VISIO a MAX_DIST_BALES ya que este valor es la distancia máxima que puede recorrer una bala, no la vision
+>>>>>>> Stashed changes
 
     private Estat estat;
     private Random random;
@@ -24,13 +28,21 @@ public class Bitxo3 extends Agent {
     private boolean mirant;
 
     public Bitxo3(Agents pare) {
+<<<<<<< Updated upstream
         super(pare, "Nosotros <3", "imatges/bobEsponja.gif");
+=======
+        super(pare, "MALO3", "imatges/bobEsponjaMALO.gif");
+>>>>>>> Stashed changes
     }
 
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
+<<<<<<< Updated upstream
         int cost = atributsAgent(5, 5, 600, 45, 30, 0, 0);
+=======
+        int cost = atributsAgent(2, 3, 600, 45, 30, 0, 0);
+>>>>>>> Stashed changes
         System.out.println("Cost total: " + cost);
         // Inicialització de variables que utilitzaré al meu comportament
         repetir = 0;
@@ -75,6 +87,10 @@ public class Bitxo3 extends Agent {
     }
 
     private void deteccioRecursos() {
+<<<<<<< Updated upstream
+=======
+        
+>>>>>>> Stashed changes
         if (estat.veigAlgunRecurs) { //He quitado esto: estat.numObjectes > 0 && , ya que es redundante
             int distanciaMin = 9999; //He cambiado MAX_DIST_BALES por 9999 porque no tenia sentido
             int distanciaActual;
@@ -107,7 +123,10 @@ public class Bitxo3 extends Agent {
                     && estat.llançaments > 0 && !estat.llançant
                     && objRecEnemigoMasCercano != null) {
                 mira(objRecEnemigoMasCercano);
+<<<<<<< Updated upstream
                 System.out.println(objRecEnemigoMasCercano.agafaIndex());
+=======
+>>>>>>> Stashed changes
                 llança();
                 mirant = true;
             }
