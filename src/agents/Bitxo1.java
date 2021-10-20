@@ -92,6 +92,7 @@ public class Bitxo1 extends Agent {
                 repetir = 5;
             } else {
 
+<<<<<<< Updated upstream
                 cerca();
                 if (heTrobatEnemic && estat.llançaments > 0) {
                     mira(recursEnemicGlobal);
@@ -106,6 +107,30 @@ public class Bitxo1 extends Agent {
                 } else if (estat.distanciaVisors[DRETA] < 20 && (estat.objecteVisor[DRETA] == PARET)) {
                     accio = ESQUERRA;
                     repetir = 1;
+=======
+    private void deteccioRecursos() {
+        if (estat.numObjectes > 0 && estat.veigAlgunRecurs) {
+            int distActualRecAli, distMinRecAli = Integer.MAX_VALUE,
+                    distActualRecEne, distMinRecEne = MAX_VISIO;
+            Objecte recAliMesProper, recEneMesProper;
+            recAliMesProper = recEneMesProper = null;
+            for (Objecte objActual : estat.objectes) {
+                if (objActual != null) {
+                    int tipusRec = objActual.agafaTipus();
+                    if (esRecAliEsc(tipusRec)) {
+                        distActualRecAli = objActual.agafaDistancia();
+                        if (distActualRecAli < distMinRecAli) {
+                            distMinRecAli = distActualRecAli;
+                            recAliMesProper = objActual;
+                        }
+                    } else if (tipusRec > 100 && !esRecAliEsc(tipusRec)) {
+                        distActualRecEne = objActual.agafaDistancia();
+                        if (distActualRecEne < distMinRecEne) {
+                            distMinRecEne = distActualRecEne;
+                            recEneMesProper = objActual;
+                        }
+                    }
+>>>>>>> Stashed changes
                 }
                 endavant();
             }
