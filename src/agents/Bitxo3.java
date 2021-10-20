@@ -30,13 +30,14 @@ public class Bitxo3 extends Agent {
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(6, 8, 600, 30, 23, 5, 5);
+        int cost = atributsAgent(7, 8, 600, 45, 30, 0, 0);
         System.out.println("Cost total: " + cost);
         // Inicialització de variables que utilitzaré al meu comportament
         repetir = 0;
         accio = Accio.ENDAVANT;
         mirant = false;
         random = new Random();
+
     }
 
     @Override
@@ -77,19 +78,22 @@ public class Bitxo3 extends Agent {
         if (estat.veigAlgunRecurs) { //He quitado esto: estat.numObjectes > 0 && , ya que es redundante
             int distanciaMin = 9999; //He cambiado MAX_DIST_BALES por 9999 porque no tenia sentido
             int distanciaActual;
+
             int distanciaMinRecAliado = 99999;
             int distanciaMinRecEnemigo = MAX_DIST_BALES; //Aquí si que se puede usar
+
             Objecte objRecAliadoMasCercano = null;
             Objecte objRecEnemigoMasCercano = null;
+
             for (Objecte objActual : estat.objectes) { //Per a cada objecte
-                if (objActual != null) {
+                if ((objActual != null) && (objActual.agafaSector() == 2 || objActual.agafaSector() == 3)) {
                     distanciaActual = objActual.agafaDistancia();
                     if (esRecursAliat(objActual)) {
                         if (distanciaActual < distanciaMinRecAliado) {
                             distanciaMinRecAliado = distanciaActual;
                             objRecAliadoMasCercano = objActual;
                         }
-                    } else if (objActual.agafaTipus() >= 100) {
+                    } else if (objActual.agafaTipus() >= 100 && !estat.llançant && !esRecursAliat(objActual)) {
                         if (distanciaActual < distanciaMinRecEnemigo) {
                             distanciaMinRecEnemigo = distanciaActual;
                             objRecEnemigoMasCercano = objActual;
@@ -97,21 +101,24 @@ public class Bitxo3 extends Agent {
                     }
                 }
             }
-            
+
+            //Salgo de este for con el recurso/agente enemigo y aliado más cercano 
             if (distanciaMinRecEnemigo < MAX_DIST_BALES
                     && estat.llançaments > 0 && !estat.llançant
                     && objRecEnemigoMasCercano != null) {
-                System.out.println(objRecEnemigoMasCercano.agafaTipus());
                 mira(objRecEnemigoMasCercano);
+                System.out.println(objRecEnemigoMasCercano.agafaIndex());
                 llança();
                 mirant = true;
             }
-            
-            if(objRecAliadoMasCercano != null){
+
+            if (objRecAliadoMasCercano != null) {
                 mira(objRecAliadoMasCercano);
                 mirant = true;
-            } else mirant = false;
-            
+            } else {
+                mirant = false;
+            }
+
         } else {
             mirant = false;
         }
