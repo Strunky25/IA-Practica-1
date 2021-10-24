@@ -21,13 +21,13 @@ public class Bitxo1 extends Agent {
     private boolean mirant;
 
     public Bitxo1(Agents pare) {
-        super(pare, "Nosotros <3", "imatges/robotank1.gif");
+        super(pare, "bobo", "imatges/bobEsponja.gif");
     }
 
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(6, 8, 600, 30, 23, 5, 5);
+        int cost = atributsAgent(5, 6, 600, 75, 30, 0, 0);
         System.out.println("Cost total: " + cost);
         // Inicialització de variables que utilitzaré al meu comportament
         repetir = 0;
@@ -101,10 +101,10 @@ public class Bitxo1 extends Agent {
                             distMinRecEne = distActualRecEne;
                             recEneMesProper = objActual;
                         }
+                        }
                     }
                 }
-            }
-            if (recEneMesProper != null && estat.llançaments > 0 
+            if (recEneMesProper != null && estat.llançaments > 0
                     && !estat.llançant && distMinRecEne < MAX_DIST_BALES) {
                 mira(recEneMesProper);
                 llança();
