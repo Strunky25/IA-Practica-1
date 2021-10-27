@@ -130,14 +130,14 @@ public class Bitxo2 extends Agent {
                     //Si no es null significa que está a menos de X píxeles y que no estoy lanzando
                     if (estat.llançaments > 0 && objEnemigoMasCercano != null) {
                         mira(objEnemigoMasCercano);
-                        if (estat.indexNau[CENTRAL] != estat.id) {
+                        if (estat.indexNau[CENTRAL] != (100 + estat.id)) {
                             llança();
                         }
                     }
                     //Si no es null significa que está a menos de X píxeles y que no estoy lanzando
                     if (estat.llançaments > 0 && objRecEnemigoMasCercano != null) {
                         mira(objRecEnemigoMasCercano);
-                        if (estat.indexNau[CENTRAL] != estat.id) {
+                        if (estat.indexNau[CENTRAL] != (100 + estat.id)) {
                             llança();
                         }
                     }
