@@ -5,7 +5,7 @@ package agents;
  */
 import java.util.Random;
 
-public class Bitxo2 extends Agent {
+public class Bitxo3 extends Agent {
 
     static final int PARET = 0;
     static final int BITXO = 1;
@@ -22,14 +22,14 @@ public class Bitxo2 extends Agent {
     private Accio accio;
     private int repetir, darrer_gir;
 
-    public Bitxo2(Agents pare) {
-        super(pare, "Malo", "imatges/bobEsponjaMalo.gif");
+    public Bitxo3(Agents pare) {
+        super(pare, "saltador", "imatges/robotank1.gif");
     }
 
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(5, 5, 600, 35, 30, 0, 0);
+        int cost = atributsAgent(4, 5, 700, 45, 35, 0, 0);
         System.out.println("Cost total: " + cost);
         // Inicialització de variables que utilitzaré al meu comportament
         repetir = 0;
@@ -40,11 +40,13 @@ public class Bitxo2 extends Agent {
 
     @Override
     public void avaluaComportament() {
+
         if (!repetirAccio()) {
             estat = estatCombat();
             deteccioRecursos();
             deteccioDispar();
             deteccioParet();
+            
         }
 
     }
@@ -53,7 +55,7 @@ public class Bitxo2 extends Agent {
         if (estat.enCollisio) {
             accio = Accio.VOLTEJ;
             repetir = 1;
-        } else if (estat.distanciaVisors[CENTRAL] < 65
+        } else if (estat.distanciaVisors[CENTRAL] < 55
                 && estat.objecteVisor[CENTRAL] == PARET) {
             if (random.nextBoolean()) {
                 accio = Accio.DRETA;
@@ -61,26 +63,12 @@ public class Bitxo2 extends Agent {
                 accio = Accio.ESQUERRA;
             }
             repetir = 3;
-        } else if (estat.distanciaVisors[ESQUERRA] < 45
+        } else if (estat.distanciaVisors[ESQUERRA] < 30
                 && estat.objecteVisor[ESQUERRA] == PARET) {
-            if ((estat.distanciaVisors[ESQUERRA] <= estat.distanciaVisors[DRETA]) && estat.objecteVisor[DRETA] == PARET) {
-                accio = Accio.DRETA;
-                repetir = 3;
-            } else if ((estat.distanciaVisors[ESQUERRA] < estat.distanciaVisors[DRETA]) && estat.objecteVisor[DRETA] == PARET) {
-                accio = Accio.ESQUERRA;
-                repetir = 3;
-            }
             accio = Accio.DRETA;
             repetir = 3;
-        } else if (estat.distanciaVisors[DRETA] < 45
+        } else if (estat.distanciaVisors[DRETA] < 30
                 && estat.objecteVisor[DRETA] == PARET) {
-            if ((estat.distanciaVisors[DRETA] <= estat.distanciaVisors[ESQUERRA]) && estat.objecteVisor[ESQUERRA] == PARET) {
-                accio = Accio.ESQUERRA;
-                repetir = 3;
-            } else if ((estat.distanciaVisors[DRETA] < estat.distanciaVisors[ESQUERRA]) && estat.objecteVisor[ESQUERRA] == PARET) {
-                accio = Accio.DRETA;
-                repetir = 3;
-            }
             accio = Accio.ESQUERRA;
             repetir = 3;
         } else {
@@ -91,7 +79,6 @@ public class Bitxo2 extends Agent {
     private void deteccioRecursos() {
         if (estat.veigAlgunRecurs) { //He quitado esto: estat.numObjectes > 0 && , ya que es redundante
             int distanciaMin = 9999; //He cambiado MAX_DIST_BALES por 9999 porque no tenia sentido
-
             int distanciaActualAliado;
             int distanciaActualRecursoEnemigo;
             int distanciaActualEnemigo;
@@ -113,6 +100,7 @@ public class Bitxo2 extends Agent {
                             objRecAliadoMasCercano = objActual;
                         }
                     } else if (objActual.agafaTipus() == Estat.AGENT && !estat.llançant) {
+                        System.out.println(objActual.agafaDistancia());
                         distanciaActualEnemigo = objActual.agafaDistancia();
                         if (distanciaActualEnemigo < distanciaMinEnemigo) {
                             distanciaMinEnemigo = distanciaActualEnemigo;
@@ -130,16 +118,12 @@ public class Bitxo2 extends Agent {
                     //Si no es null significa que está a menos de X píxeles y que no estoy lanzando
                     if (estat.llançaments > 0 && objEnemigoMasCercano != null) {
                         mira(objEnemigoMasCercano);
-                        if (estat.indexNau[CENTRAL] != estat.id) {
-                            llança();
-                        }
+                        llança();
                     }
                     //Si no es null significa que está a menos de X píxeles y que no estoy lanzando
                     if (estat.llançaments > 0 && objRecEnemigoMasCercano != null) {
                         mira(objRecEnemigoMasCercano);
-                        if (estat.indexNau[CENTRAL] != estat.id) {
-                            llança();
-                        }
+                        llança();
                     }
 
                     if (objRecAliadoMasCercano != null) {
