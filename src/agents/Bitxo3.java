@@ -43,7 +43,7 @@ public class Bitxo3 extends Agent {
 
         if (!repetirAccio()) {
             estat = estatCombat();
-            deteccioRecursos();
+            deteccioRecursosiEnemics();
             deteccioDispar();
             deteccioParet();
             
@@ -76,7 +76,7 @@ public class Bitxo3 extends Agent {
         }
     }
 
-    private void deteccioRecursos() {
+    private void deteccioRecursosiEnemics() {
         if (estat.veigAlgunRecurs) { //He quitado esto: estat.numObjectes > 0 && , ya que es redundante
             int distanciaMin = 9999; //He cambiado MAX_DIST_BALES por 9999 porque no tenia sentido
             int distanciaActualAliado;
