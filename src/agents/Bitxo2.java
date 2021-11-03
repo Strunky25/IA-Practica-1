@@ -23,13 +23,13 @@ public class Bitxo2 extends Agent {
     private int repetir, darrer_gir;
 
     public Bitxo2(Agents pare) {
-        super(pare, "Malo", "imatges/bobEsponjaMalo.gif");
+        super(pare, "Lift", "imatges/bobEsponjaMalo.gif");
     }
 
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(5, 5, 600, 35, 30, 0, 0);
+        int cost = atributsAgent(5, 0, 600, 60, 30, 0, 0);
         System.out.println("Cost total: " + cost);
         // Inicialització de variables que utilitzaré al meu comportament
         repetir = 0;
@@ -98,14 +98,16 @@ public class Bitxo2 extends Agent {
 
             int distanciaMinRecAliado = 99999;
             int distanciaMinRecEnemigo = MAX_DIST_BALES; //Aquí si que se puede usar
-            int distanciaMinEnemigo = 200;
+            int distanciaMinEnemigo = 300;
 
             Objecte objRecAliadoMasCercano = null;
             Objecte objRecEnemigoMasCercano = null;
             Objecte objEnemigoMasCercano = null;
 
+            boolean dos_i_tres_buit = true;
             for (Objecte objActual : estat.objectes) { //Per a cada objecte
                 if ((objActual != null) && (objActual.agafaSector() == 2 || objActual.agafaSector() == 3)) {
+                    dos_i_tres_buit = false;
                     if (esRecursAliat(objActual)) {
                         distanciaActualAliado = objActual.agafaDistancia();
                         if (distanciaActualAliado < distanciaMinRecAliado) {
@@ -113,9 +115,7 @@ public class Bitxo2 extends Agent {
                             objRecAliadoMasCercano = objActual;
                         }
                     } else if (objActual.agafaTipus() == Estat.AGENT && !estat.llançant) {
-                        distanciaActualEnemigo = objActual.agafaDistancia();
-                        if (distanciaActualEnemigo < distanciaMinEnemigo) {
-                            distanciaMinEnemigo = distanciaActualEnemigo;
+                        if (objActual.agafaDistancia() < distanciaMinEnemigo) {
                             objEnemigoMasCercano = objActual;
                         }
                     } else if ((objActual.agafaTipus() >= 100) && !estat.llançant) {
@@ -130,22 +130,33 @@ public class Bitxo2 extends Agent {
                     //Si no es null significa que está a menos de X píxeles y que no estoy lanzando
                     if (estat.llançaments > 0 && objEnemigoMasCercano != null) {
                         mira(objEnemigoMasCercano);
-                        if (estat.indexNau[CENTRAL] != (100 + estat.id)) {
-                            llança();
-                        }
+                        llança();
+//                        if (estat.indexNau[CENTRAL] != (100 + estat.id)) {  ///////////////////////////////////////
+//                            llança();
+//                            System.out.println("pium");
+//                        } else {
+//                            System.out.println("Quiero disparar pero no puedo");
+//                        }
                     }
+
                     //Si no es null significa que está a menos de X píxeles y que no estoy lanzando
                     if (estat.llançaments > 0 && objRecEnemigoMasCercano != null) {
                         mira(objRecEnemigoMasCercano);
-                        if (estat.indexNau[CENTRAL] != (100 + estat.id)) {
-                            llança();
+                        llança();
+//                        if (estat.indexNau[CENTRAL] != (100 + estat.id)) {  ///////////////////////////////////////
+//                            llança();
+//                            System.out.println("pium");
+//                        } else {
+//                            System.out.println("Quiero disparar pero no puedo");
+//                        }
+
+                        if (objRecAliadoMasCercano != null) {
+                            mira(objRecAliadoMasCercano);
                         }
                     }
+                    if (dos_i_tres_buit) {
 
-                    if (objRecAliadoMasCercano != null) {
-                        mira(objRecAliadoMasCercano);
                     }
-
                 }
             }
         }
@@ -167,10 +178,8 @@ public class Bitxo2 extends Agent {
                 case VOLTEJ:
                     darrer_gir = 180 + (random.nextInt(90) - 45); //Gira 135-225 grados
                     break;
-
             }
             gira(darrer_gir);
-
             repetir--;
             return true;
         } else {
@@ -179,7 +188,8 @@ public class Bitxo2 extends Agent {
     }
 
     private void deteccioDispar() {
-        if (estat.llançamentEnemicDetectat && estat.escutActivat == false && estat.escuts > 0) {
+        if (estat.llançamentEnemicDetectat && estat.escutActivat == false 
+                && estat.escuts > 0 && estat.distanciaLlançamentEnemic > 100) {
             activaEscut();
         }
     }
