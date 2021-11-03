@@ -126,7 +126,7 @@ public class Bitxo1 extends Agent {
 
             for (Objecte objActual : estat.objectes) { //Per a cada objecte
                 if (objActual != null) {
-                    
+
                     if (objActual.agafaTipus() == (100 + estat.id)) {
                         if (objActual.agafaDistancia() < distanciesMinimes[RecursAliat]) {
                             distanciesMinimes[RecursAliat] = objActual.agafaDistancia();
@@ -196,7 +196,7 @@ public class Bitxo1 extends Agent {
                         }
                     } else if (recursosPropers[Escut] != null && recursosPropers_2y3[Escut] == null) {
                         if (recursosPropers[Escut].agafaSector() == 4) {
-                            gira(360 - 90 - angle);
+                            gira(360 - (90 - angle));
                         } else if (recursosPropers[Escut].agafaSector() == 1) {
                             gira(90 - angle);
                         }
@@ -207,7 +207,7 @@ public class Bitxo1 extends Agent {
 
                     if (recursosPropers[Agent] != null && distanciesMinimes[Agent] < 30) {
                         if (recursosPropers[Agent].agafaSector() == 4) {
-                            gira(360 - 90 - angle);
+                            gira(360 - (90 - angle));
                         } else if (recursosPropers[Agent].agafaSector() == 1) {
                             gira(90 - angle);
                         }
@@ -221,7 +221,7 @@ public class Bitxo1 extends Agent {
                         llançant = true;
                     } else if (recursosPropers[RecursEnemic] != null) {
                         if (recursosPropers[RecursEnemic].agafaSector() == 4) {
-                            gira(360 - 90 - angle);
+                            gira(360 - (90 - angle));
                         } else if (recursosPropers[RecursEnemic].agafaSector() == 1) {
                             gira(90 - angle);
                         }
