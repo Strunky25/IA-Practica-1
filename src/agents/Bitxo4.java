@@ -1,3 +1,5 @@
+
+
 // 
 // Decompiled by Procyon v0.5.36
 // 
@@ -60,7 +62,7 @@ public class Bitxo4 extends Agent
     }
     
     void defensa() {
-        if (this.estat.impactesRebuts > this.ferides || this.estat.llan\u00e7amentEnemicDetectat) {
+        if (this.estat.impactesRebuts > this.ferides || this.estat.llançamentEnemicDetectat) {
             this.ferides = this.estat.impactesRebuts;
             if (!this.estat.escutActivat && this.estat.escuts > 0) {
                 this.activaEscut();
@@ -76,7 +78,7 @@ public class Bitxo4 extends Agent
     
     void ataca() {
         if (this.estat.objecteVisor[1] == 1) {
-            this.llan\u00e7a();
+            this.llança();
         }
     }
     
@@ -88,7 +90,7 @@ public class Bitxo4 extends Agent
             }
             this.missatge("Estic en col.lisio");
             if (this.estat.objecteVisor[1] == 1) {
-                this.llan\u00e7a();
+                this.llança();
             }
             else {
                 if (this.hiHaParedDavant(20)) {
@@ -276,3 +278,4 @@ public class Bitxo4 extends Agent
         return null;
     }
 }
+
