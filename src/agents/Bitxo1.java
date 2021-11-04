@@ -15,16 +15,22 @@ public class Bitxo1 extends Agent {
     static final int CENTRAL = 1;
     static final int DRETA = 2;
 
-    private static final int MAX_DIST_BALES = 400; //RENAME de MAX_VISIO a MAX_DIST_BALES ya que este valor es la distancia máxima que puede recorrer una bala, no la vision
+    private static final int AGENT = 0;
+    private static final int RECURS_ALIAT = 1;
+    private static final int RECURS_ENEMIC = 2;
+    private static final int ESCUT = 3;
+
+    private static final int MAX_DIST_BALES = 400;
 
     private Estat estat;
     private Random random;
     private Accio accio;
     private int repetir, darrer_gir;
-
+    private Objecte objPropersSecDosTres[], objPropers[];
+    private int distMinSecDosTres[], distMin[];
     private static int angle = 60;
-    boolean llançant;
-    int impactes;
+    private boolean llançant;
+    private int impactes;
 
     public Bitxo1(Agents pare) {
         super(pare, "3", "imatges/robotank3.gif");
@@ -41,7 +47,10 @@ public class Bitxo1 extends Agent {
         llançant = false;
         accio = Accio.ENDAVANT;
         random = new Random();
-
+        objPropersSecDosTres = new Objecte[4];
+        objPropers = new Objecte[4];
+        distMinSecDosTres = new int[4];
+        distMin = new int[4];
     }
 
     @Override
@@ -51,7 +60,7 @@ public class Bitxo1 extends Agent {
             llança();
             llançant = false;
         } else if (!repetirAccio()) {
-            deteccioRecursos();
+            deteccioObjectes();
             deteccioDispar();
             deteccioParet();
         }
@@ -101,134 +110,118 @@ public class Bitxo1 extends Agent {
         }
     }
 
-    private void deteccioRecursos() {
-        if (estat.veigAlgunRecurs) { //He quitado esto: estat.numObjectes > 0 && , ya que es redundante
-            Objecte recursosPropers_2y3[] = new Objecte[4];
-            Objecte recursosPropers[] = new Objecte[4];
+    private void deteccioObjectes() {
+        if (estat.veigAlgunRecurs || estat.veigAlgunEscut || estat.veigAlgunEnemic) {
+            distMinSecDosTres[AGENT] = 300;
+            distMinSecDosTres[RECURS_ALIAT] = distMinSecDosTres[ESCUT] = 9999;
+            distMinSecDosTres[RECURS_ENEMIC] = MAX_DIST_BALES;
 
-            int distanciesMinimes_2y3[] = new int[4];
-            int distanciesMinimes[] = new int[4];
-
-            int Agent = 0;
-            int RecursAliat = 1;
-            int RecursEnemic = 2;
-            int Escut = 3;
-
-            distanciesMinimes_2y3[Agent] = 300;
-            distanciesMinimes_2y3[RecursAliat] = 9999;
-            distanciesMinimes_2y3[RecursEnemic] = 400;
-            distanciesMinimes_2y3[Escut] = 9999;
-
-            distanciesMinimes[Agent] = 300;
-            distanciesMinimes[RecursAliat] = 9999;
-            distanciesMinimes[RecursEnemic] = 400;
-            distanciesMinimes[Escut] = 9999;
-
-            for (Objecte objActual : estat.objectes) { //Per a cada objecte
+            distMin[AGENT] = 300;
+            distMin[RECURS_ALIAT] = distMin[ESCUT] = 9999;
+            distMin[RECURS_ENEMIC] = MAX_DIST_BALES;
+            for (Objecte objActual : estat.objectes) {
                 if (objActual != null) {
-
                     if (objActual.agafaTipus() == (100 + estat.id)) {
-                        if (objActual.agafaDistancia() < distanciesMinimes[RecursAliat]) {
-                            distanciesMinimes[RecursAliat] = objActual.agafaDistancia();
-                            recursosPropers[RecursAliat] = objActual;
+                        if (objActual.agafaDistancia() < distMin[RECURS_ALIAT]) {
+                            distMin[RECURS_ALIAT] = objActual.agafaDistancia();
+                            objPropers[RECURS_ALIAT] = objActual;
                         }
                     } else if (objActual.agafaTipus() == Estat.AGENT && !estat.llançant) {
                         if (objActual.agafaSector() == 2 || objActual.agafaSector() == 3) {
-                            if (objActual.agafaDistancia() < distanciesMinimes_2y3[Agent]) {
-                                recursosPropers_2y3[Agent] = objActual;
+                            if (objActual.agafaDistancia() < distMinSecDosTres[AGENT]) {
+                                objPropersSecDosTres[AGENT] = objActual;
                             }
                         } else {
-                            if (objActual.agafaDistancia() < distanciesMinimes[Agent]) {
-                                recursosPropers[Agent] = objActual;
+                            if (objActual.agafaDistancia() < distMin[AGENT]) {
+                                objPropers[AGENT] = objActual;
                             }
                         }
                     } else if ((objActual.agafaTipus() >= 100) && !estat.llançant) {
                         if (objActual.agafaSector() == 2 || objActual.agafaSector() == 3) {
-                            if (objActual.agafaDistancia() < distanciesMinimes_2y3[RecursEnemic]) {
-                                distanciesMinimes_2y3[RecursEnemic] = objActual.agafaDistancia();
-                                recursosPropers_2y3[RecursEnemic] = objActual;
+                            if (objActual.agafaDistancia() < distMinSecDosTres[RECURS_ENEMIC]) {
+                                distMinSecDosTres[RECURS_ENEMIC] = objActual.agafaDistancia();
+                                objPropersSecDosTres[RECURS_ENEMIC] = objActual;
                             }
                         } else {
-                            if (objActual.agafaDistancia() < distanciesMinimes[RecursEnemic]) {
-                                distanciesMinimes[RecursEnemic] = objActual.agafaDistancia();
-                                recursosPropers[RecursEnemic] = objActual;
+                            if (objActual.agafaDistancia() < distMin[RECURS_ENEMIC]) {
+                                distMin[RECURS_ENEMIC] = objActual.agafaDistancia();
+                                objPropers[RECURS_ENEMIC] = objActual;
                             }
                         }
                     } else if (objActual.agafaTipus() == Estat.ESCUT) {
                         if (objActual.agafaSector() == 2 || objActual.agafaSector() == 3) {
-                            if (objActual.agafaDistancia() < distanciesMinimes_2y3[Escut]) {
-                                distanciesMinimes_2y3[Escut] = objActual.agafaDistancia();
-                                recursosPropers_2y3[Escut] = objActual;
+                            if (objActual.agafaDistancia() < distMinSecDosTres[ESCUT]) {
+                                distMinSecDosTres[ESCUT] = objActual.agafaDistancia();
+                                objPropersSecDosTres[ESCUT] = objActual;
                             }
                         } else {
-                            if (objActual.agafaDistancia() < distanciesMinimes[Escut]) {
-                                distanciesMinimes[Escut] = objActual.agafaDistancia();
-                                recursosPropers[Escut] = objActual;
+                            if (objActual.agafaDistancia() < distMin[ESCUT]) {
+                                distMin[ESCUT] = objActual.agafaDistancia();
+                                objPropers[ESCUT] = objActual;
                             }
                         }
-                    }
-
-                    if (recursosPropers[RecursAliat] != null) {
-                        switch (recursosPropers[RecursAliat].agafaSector()) {
-                            case 1:
-                                gira(90 - angle);
-                                break;
-                            case 2:
-                                mira(recursosPropers[RecursAliat]);
-                                break;
-                            case 3:
-                                mira(recursosPropers[RecursAliat]);
-                                break;
-                            case 4:
-                                gira(360 - (90 - angle));
-                                break;
-                        }
-                    } else if (recursosPropers[Escut] != null && recursosPropers_2y3[Escut] != null) {
-                        if (distanciesMinimes[Escut] < distanciesMinimes_2y3[Escut]) {
-                            if (recursosPropers[Escut].agafaSector() == 4) {
-                                gira(360 - (90 - angle));
-                            } else if (recursosPropers[Escut].agafaSector() == 1) {
-                                gira(90 - angle);
-                            }
-                            mira(recursosPropers[Escut]);
-                        } else {
-                            mira(recursosPropers_2y3[Escut]);
-                        }
-                    } else if (recursosPropers[Escut] != null && recursosPropers_2y3[Escut] == null) {
-                        if (recursosPropers[Escut].agafaSector() == 4) {
-                            gira(360 - (90 - angle));
-                        } else if (recursosPropers[Escut].agafaSector() == 1) {
-                            gira(90 - angle);
-                        }
-                        mira(recursosPropers[Escut]);
-                    } else if (recursosPropers[Escut] == null && recursosPropers_2y3[Escut] != null) {
-                        mira(recursosPropers_2y3[Escut]);
-                    }
-
-                    if (recursosPropers[Agent] != null && distanciesMinimes[Agent] < 30) {
-                        if (recursosPropers[Agent].agafaSector() == 4) {
-                            gira(360 - (90 - angle));
-                        } else if (recursosPropers[Agent].agafaSector() == 1) {
-                            gira(90 - angle);
-                        }
-                        mira(recursosPropers[Agent]);
-                        llançant = true;
-                    } else if (estat.llançaments > 0 && recursosPropers_2y3[Agent] != null) {
-                        mira(recursosPropers_2y3[Agent]);
-                        llançant = true;
-                    } else if (estat.llançaments > 0 && recursosPropers_2y3[RecursEnemic] != null) {
-                        mira(recursosPropers_2y3[RecursEnemic]);
-                        llançant = true;
-                    } else if (recursosPropers[RecursEnemic] != null) {
-                        if (recursosPropers[RecursEnemic].agafaSector() == 4) {
-                            gira(360 - (90 - angle));
-                        } else if (recursosPropers[RecursEnemic].agafaSector() == 1) {
-                            gira(90 - angle);
-                        }
-                        mira(recursosPropers[RecursEnemic]);
-                        llançant = true;
                     }
                 }
+            }
+            if (objPropers[RECURS_ALIAT] != null) {
+                switch (objPropers[RECURS_ALIAT].agafaSector()) {
+                    case 1:
+                        gira(90 - angle);
+                        break;
+                    case 2:
+                        mira(objPropers[RECURS_ALIAT]);
+                        break;
+                    case 3:
+                        mira(objPropers[RECURS_ALIAT]);
+                        break;
+                    case 4:
+                        gira(360 - (90 - angle));
+                        break;
+                }
+            } else if (objPropers[ESCUT] != null && objPropersSecDosTres[ESCUT] != null) {
+                if (distMin[ESCUT] < distMinSecDosTres[ESCUT]) {
+                    if (objPropers[ESCUT].agafaSector() == 4) {
+                        gira(360 - (90 - angle));
+                    } else if (objPropers[ESCUT].agafaSector() == 1) {
+                        gira(90 - angle);
+                    }
+                    mira(objPropers[ESCUT]);
+                } else {
+                    mira(objPropersSecDosTres[ESCUT]);
+                }
+            } else if (objPropers[ESCUT] != null && objPropersSecDosTres[ESCUT] == null) {
+                if (objPropers[ESCUT].agafaSector() == 4) {
+                    gira(360 - (90 - angle));
+                } else if (objPropers[ESCUT].agafaSector() == 1) {
+                    gira(90 - angle);
+                }
+                mira(objPropers[ESCUT]);
+            } else if (objPropers[ESCUT] == null && objPropersSecDosTres[ESCUT] != null) {
+                mira(objPropersSecDosTres[ESCUT]);
+            }
+
+            if (objPropers[AGENT] != null && distMin[AGENT] < 30) {
+                if (objPropers[AGENT].agafaSector() == 4) {
+                    gira(360 - (90 - angle));
+                } else if (objPropers[AGENT].agafaSector() == 1) {
+                    gira(90 - angle);
+                }
+                mira(objPropers[AGENT]);
+                llançant = true;
+            } else if (estat.llançaments > 0 && objPropersSecDosTres[AGENT] != null) {
+                mira(objPropersSecDosTres[AGENT]);
+                llançant = true;
+            } else if (estat.llançaments > 0 && objPropersSecDosTres[RECURS_ENEMIC] != null) {
+                mira(objPropersSecDosTres[RECURS_ENEMIC]);
+                llançant = true;
+            } else if (objPropers[RECURS_ENEMIC] != null) {
+                if (objPropers[RECURS_ENEMIC].agafaSector() == 4) {
+                    gira(360 - (90 - angle));
+                } else if (objPropers[RECURS_ENEMIC].agafaSector() == 1) {
+                    gira(90 - angle);
+                }
+                mira(objPropers[RECURS_ENEMIC]);
+                llançant = true;
             }
         }
     }
