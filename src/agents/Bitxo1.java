@@ -147,8 +147,7 @@ public class Bitxo1 extends Agent {
             tipus = RECURS_ALIAT;
         } else if (tipusObjecte == Estat.AGENT && !estat.llançant) {
             tipus = AGENT;
-        } else if (tipusObjecte >= 100 && tipusObjecte != (100 + estat.id)
-                && !estat.llançant) {
+        } else if (tipusObjecte >= 100 && !estat.llançant) {
             tipus = RECURS_ENEMIC;
         } else if (tipusObjecte == Estat.ESCUT) {
             tipus = ESCUT;
