@@ -35,13 +35,13 @@ public class Bitxo1 extends Agent {
     private Accio accio;
 
     public Bitxo1(Agents pare) {
-        super(pare, "3", "imatges/robotank3.gif");
+        super(pare, "Bitxo 1", "imatges/robotank1.gif");
     }
 
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(5, 0, 600, ANGLE, 30, 5, 0);
+        int cost = atributsAgent(5, 0, 600, ANGLE, 50, 5, 0);
         System.out.println("Cost total: " + cost);
         // Inicialització de variables que utilitzaré al meu comportament
         repetir = impactes = 0;
@@ -57,10 +57,11 @@ public class Bitxo1 extends Agent {
 
     @Override
     public void avaluaComportament() {
+        estat = estatCombat();
         comprobaLlançament();
-        comprobarLocalitzat();
-        if (tipusLocalitzat == RES && !repetirAccio()) {
-            estat = estatCombat();
+        if (tipusLocalitzat != RES) {
+            comprobarLocalitzat();
+        } else if (!repetirAccio()) {
             deteccioObjectes();
             deteccioDisparEnemic();
             deteccioParet();
@@ -76,13 +77,11 @@ public class Bitxo1 extends Agent {
     }
 
     private void comprobarLocalitzat() {
-        if (tipusLocalitzat != RES) {
-            if (tipusLocalitzat == AGENT_ENEMIC || tipusLocalitzat == RECURS_ALIAT) {
-                llançant = true;
-            }
-            mira(objPropers[tipusLocalitzat]);
-            tipusLocalitzat = RES;
+        if (tipusLocalitzat == AGENT_ENEMIC || tipusLocalitzat == RECURS_ALIAT) {
+            llançant = true;
         }
+        mira(objPropers[tipusLocalitzat]);
+        tipusLocalitzat = RES;
     }
 
     private void deteccioParet() {
@@ -182,23 +181,23 @@ public class Bitxo1 extends Agent {
         switch (objPropers[RECURS_ALIAT].agafaSector()) {
             case 1:
                 gira(SECTOR1);
-                tipusLocalitzat = RECURS_ALIAT;
+
                 break;
             case 4:
                 gira(SECTOR4);
-                tipusLocalitzat = RECURS_ALIAT;
                 break;
             default:
                 mira(objPropers[RECURS_ALIAT]);
                 break;
         }
+        tipusLocalitzat = RECURS_ALIAT;
     }
 
     private void disparaObjecteEnemic(int tipusObj) {
         if (objPropersSecDosTres[tipusObj] != null && estat.llançaments > 0) {
             mira(objPropersSecDosTres[tipusObj]);
             llançant = true;
-        } else if (objPropers[RECURS_ALIAT] == null) {
+        } else if (tipusLocalitzat == RES) {
             if (objPropers[tipusObj].agafaSector() == 1) {
                 gira(SECTOR1);
             } else if (objPropers[tipusObj].agafaSector() == 4) {
@@ -214,12 +213,13 @@ public class Bitxo1 extends Agent {
             objectesDistanciaMinima();
             if (objPropers[RECURS_ALIAT] != null) {
                 cercaRecursAliat();
-            } else if (objPropers[AGENT_ENEMIC] != null) {
+            } else if (objPropersSecDosTres[ESCUT] != null) {
+                mira(objPropersSecDosTres[ESCUT]);
+            }
+            if (objPropers[AGENT_ENEMIC] != null) {
                 disparaObjecteEnemic(AGENT_ENEMIC);
             } else if (objPropers[RECURS_ENEMIC] != null) {
                 disparaObjecteEnemic(RECURS_ENEMIC);
-            } else if (objPropersSecDosTres[ESCUT] != null) {
-                mira(objPropersSecDosTres[ESCUT]);
             }
         }
     }
@@ -247,7 +247,7 @@ public class Bitxo1 extends Agent {
 
     private void deteccioDisparEnemic() {
         if (estat.llançamentEnemicDetectat && estat.escutActivat == false
-                && estat.escuts > 0 && estat.distanciaLlançamentEnemic < 100) { //< 100??
+                && estat.escuts > 0 && estat.distanciaLlançamentEnemic < 100) {
             activaEscut();
         } else if (estat.impactesRebuts > impactes && estat.escutActivat == false
                 && estat.escuts > 0) {

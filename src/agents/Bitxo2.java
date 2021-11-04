@@ -15,45 +15,83 @@ public class Bitxo2 extends Agent {
     static final int CENTRAL = 1;
     static final int DRETA = 2;
 
-    private static final int MAX_DIST_BALES = 400; //RENAME de MAX_VISIO a MAX_DIST_BALES ya que este valor es la distancia máxima que puede recorrer una bala, no la vision
+    private static final int MAX_DIST_BALES = 400;
 
+    private static final int ANGLE = 60;
+    private static final int SECTOR1 = -(90 - ANGLE);
+    private static final int SECTOR4 = -SECTOR1;
+
+    private static final int AGENT_ENEMIC = 0;
+    private static final int RECURS_ALIAT = 1;
+    private static final int RECURS_ENEMIC = 2;
+    private static final int ESCUT = 3;
+
+    private Objecte objPropers[], objPropersSecDosTres[];
+    private int distMin[], distMinSecDosTres[];
+    private int repetir, darrer_gir, impactes, tipusLocalitzat;
+    private boolean llançant;
     private Estat estat;
     private Random random;
     private Accio accio;
-    private int repetir, darrer_gir;
 
     public Bitxo2(Agents pare) {
-        super(pare, "Lift", "imatges/bobEsponjaMalo.gif");
+        super(pare, "Bitxo 2", "imatges/robotank2.gif");
     }
 
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(5, 0, 600, 60, 30, 0, 0);
+        int cost = atributsAgent(5, 4, 699, ANGLE, 50, 5, 0);
         System.out.println("Cost total: " + cost);
         // Inicialització de variables que utilitzaré al meu comportament
-        repetir = 0;
+        repetir = impactes = 0;
+        llançant = false;
+        tipusLocalitzat = RES;
         accio = Accio.ENDAVANT;
         random = new Random();
-
+        objPropersSecDosTres = new Objecte[4];
+        objPropers = new Objecte[4];
+        distMinSecDosTres = new int[4];
+        distMin = new int[4];
     }
 
     @Override
     public void avaluaComportament() {
-
-        if (!repetirAccio()) {
-            estat = estatCombat();
-            deteccioRecursos();
-            deteccioDispar();
+        estat = estatCombat();
+        comprobaLlançament();
+        if (tipusLocalitzat != RES) {
+            comprobarLocalitzat();
+        } else if (!repetirAccio()) {
+            deteccioObjectes();
+            deteccioDisparEnemic();
             deteccioParet();
         }
 
     }
 
+    private void comprobaLlançament() {
+        if (estat.indexNau[CENTRAL] != (100 + estat.id) && llançant) {
+            llança();
+            llançant = false;
+        }
+    }
+
+    private void comprobarLocalitzat() {
+        if (tipusLocalitzat == AGENT_ENEMIC || tipusLocalitzat == RECURS_ALIAT) {
+            llançant = true;
+        }
+        mira(objPropers[tipusLocalitzat]);
+        tipusLocalitzat = RES;
+    }
+
     private void deteccioParet() {
         if (estat.enCollisio) {
-            accio = Accio.VOLTEJ;
-            repetir = 1;
+            if (estat.objecteVisor[CENTRAL] == BITXO) {
+                llança();
+            } else {
+                accio = Accio.VOLTEJ;
+                repetir = 1;
+            }
         } else if (estat.distanciaVisors[CENTRAL] < 65
                 && estat.objecteVisor[CENTRAL] == PARET) {
             if (random.nextBoolean()) {
@@ -62,7 +100,7 @@ public class Bitxo2 extends Agent {
                 accio = Accio.ESQUERRA;
             }
             repetir = 3;
-        } else if (estat.distanciaVisors[ESQUERRA] < 45
+        } else if (estat.distanciaVisors[ESQUERRA] < 35
                 && estat.objecteVisor[ESQUERRA] == PARET) {
             if ((estat.distanciaVisors[ESQUERRA] <= estat.distanciaVisors[DRETA]) && estat.objecteVisor[DRETA] == PARET) {
                 accio = Accio.DRETA;
@@ -73,7 +111,7 @@ public class Bitxo2 extends Agent {
             }
             accio = Accio.DRETA;
             repetir = 3;
-        } else if (estat.distanciaVisors[DRETA] < 45
+        } else if (estat.distanciaVisors[DRETA] < 35
                 && estat.objecteVisor[DRETA] == PARET) {
             if ((estat.distanciaVisors[DRETA] <= estat.distanciaVisors[ESQUERRA]) && estat.objecteVisor[ESQUERRA] == PARET) {
                 accio = Accio.ESQUERRA;
@@ -89,82 +127,101 @@ public class Bitxo2 extends Agent {
         }
     }
 
-    private void deteccioRecursos() {
-        if (estat.veigAlgunRecurs) { //He quitado esto: estat.numObjectes > 0 && , ya que es redundante
-            int distanciaMin = 9999; //He cambiado MAX_DIST_BALES por 9999 porque no tenia sentido
+    private void initArrayObjectes() {
+        llançant = false;
+        for (int i = 0; i < objPropers.length; i++) {
+            objPropers[i] = null;
+            objPropersSecDosTres[i] = null;
+        }
 
-            int distanciaActualAliado;
-            int distanciaActualRecursoEnemigo;
-            int distanciaActualEnemigo;
+        distMinSecDosTres[AGENT_ENEMIC] = 250;
+        distMinSecDosTres[RECURS_ALIAT] = distMinSecDosTres[ESCUT] = 9999;
+        distMinSecDosTres[RECURS_ENEMIC] = MAX_DIST_BALES;
 
-            int distanciaMinRecAliado = 99999;
-            int distanciaMinRecEnemigo = MAX_DIST_BALES; //Aquí si que se puede usar
-            int distanciaMinEnemigo = 300;
+        distMin[AGENT_ENEMIC] = 250;
+        distMin[RECURS_ALIAT] = distMin[ESCUT] = 9999;
+        distMin[RECURS_ENEMIC] = MAX_DIST_BALES;
+    }
 
-            Objecte objRecAliadoMasCercano = null;
-            Objecte objRecEnemigoMasCercano = null;
-            Objecte objEnemigoMasCercano = null;
-
-            boolean dos_i_tres_buit = true;
-            for (Objecte objActual : estat.objectes) { //Per a cada objecte
-                if ((objActual != null) && (objActual.agafaSector() == 2 || objActual.agafaSector() == 3)) {
-                    dos_i_tres_buit = false;
-                    if (esRecursAliat(objActual)) {
-                        distanciaActualAliado = objActual.agafaDistancia();
-                        if (distanciaActualAliado < distanciaMinRecAliado) {
-                            distanciaMinRecAliado = distanciaActualAliado;
-                            objRecAliadoMasCercano = objActual;
-                        }
-                    } else if (objActual.agafaTipus() == Estat.AGENT && !estat.llançant) {
-                        if (objActual.agafaDistancia() < distanciaMinEnemigo) {
-                            objEnemigoMasCercano = objActual;
-                        }
-                    } else if ((objActual.agafaTipus() >= 100) && !estat.llançant) {
-                        distanciaActualRecursoEnemigo = objActual.agafaDistancia();
-                        if (distanciaActualRecursoEnemigo < distanciaMinRecEnemigo) {
-                            distanciaMinRecEnemigo = distanciaActualRecursoEnemigo;
-                            objRecEnemigoMasCercano = objActual;
-                        }
+    private void objectesDistanciaMinima() {
+        for (Objecte obj : estat.objectes) {
+            if (obj != null) {
+                int tipus = getTipusObjecte(obj);
+                if (tipus != RES) {
+                    int distObj = obj.agafaDistancia();
+                    if ((obj.agafaSector() == 2 || obj.agafaSector() == 3)
+                            && distObj < distMinSecDosTres[tipus]) {
+                        distMinSecDosTres[tipus] = distObj;
+                        objPropersSecDosTres[tipus] = obj;
                     }
-
-                    //Salgo de este for con el recurso/agente enemigo y aliado más cercano 
-                    //Si no es null significa que está a menos de X píxeles y que no estoy lanzando
-                    if (estat.llançaments > 0 && objEnemigoMasCercano != null) {
-                        mira(objEnemigoMasCercano);
-                        llança();
-//                        if (estat.indexNau[CENTRAL] != (100 + estat.id)) {  ///////////////////////////////////////
-//                            llança();
-//                            System.out.println("pium");
-//                        } else {
-//                            System.out.println("Quiero disparar pero no puedo");
-//                        }
-                    }
-
-                    //Si no es null significa que está a menos de X píxeles y que no estoy lanzando
-                    if (estat.llançaments > 0 && objRecEnemigoMasCercano != null) {
-                        mira(objRecEnemigoMasCercano);
-                        llança();
-//                        if (estat.indexNau[CENTRAL] != (100 + estat.id)) {  ///////////////////////////////////////
-//                            llança();
-//                            System.out.println("pium");
-//                        } else {
-//                            System.out.println("Quiero disparar pero no puedo");
-//                        }
-
-                        if (objRecAliadoMasCercano != null) {
-                            mira(objRecAliadoMasCercano);
-                        }
-                    }
-                    if (dos_i_tres_buit) {
-
+                    if (distObj < distMin[tipus]) {
+                        distMin[tipus] = distObj;
+                        objPropers[tipus] = obj;
                     }
                 }
             }
         }
     }
 
-    private boolean esRecursAliat(Objecte obj) {
-        return obj.agafaTipus() == (100 + estat.id);
+    private int getTipusObjecte(Objecte obj) {
+        int tipusObjecte = obj.agafaTipus();
+        if (tipusObjecte == (100 + estat.id)) {
+            return RECURS_ALIAT;
+        } else if (tipusObjecte == Estat.AGENT && !estat.llançant) {
+            return AGENT_ENEMIC;
+        } else if (tipusObjecte >= 100 && !estat.llançant) {
+            return RECURS_ENEMIC;
+        } else if (tipusObjecte == Estat.ESCUT) {
+            return ESCUT;
+        }
+        return RES;
+    }
+
+    private void cercaRecursAliat() {
+        switch (objPropers[RECURS_ALIAT].agafaSector()) {
+            case 1:
+                gira(SECTOR1);
+
+                break;
+            case 4:
+                gira(SECTOR4);
+                break;
+            default:
+                mira(objPropers[RECURS_ALIAT]);
+                break;
+        }
+        tipusLocalitzat = RECURS_ALIAT;
+    }
+
+    private void disparaObjecteEnemic(int tipusObj) {
+        if (objPropersSecDosTres[tipusObj] != null && estat.llançaments > 0) {
+            mira(objPropersSecDosTres[tipusObj]);
+            llançant = true;
+        } else if (tipusLocalitzat == RES) {
+            if (objPropers[tipusObj].agafaSector() == 1) {
+                gira(SECTOR1);
+            } else if (objPropers[tipusObj].agafaSector() == 4) {
+                gira(SECTOR4);
+            }
+            tipusLocalitzat = tipusObj;
+        }
+    }
+
+    private void deteccioObjectes() {
+        if (estat.veigAlgunRecurs || estat.veigAlgunEscut || estat.veigAlgunEnemic) {
+            initArrayObjectes();
+            objectesDistanciaMinima();
+            if (objPropers[RECURS_ALIAT] != null) {
+                cercaRecursAliat();
+            } else if (objPropersSecDosTres[ESCUT] != null) {
+                mira(objPropersSecDosTres[ESCUT]);
+            }
+            if (objPropers[AGENT_ENEMIC] != null) {
+                disparaObjecteEnemic(AGENT_ENEMIC);
+            } else if (objPropers[RECURS_ENEMIC] != null) {
+                disparaObjecteEnemic(RECURS_ENEMIC);
+            }
+        }
     }
 
     private boolean repetirAccio() {
@@ -188,9 +245,13 @@ public class Bitxo2 extends Agent {
         }
     }
 
-    private void deteccioDispar() {
+    private void deteccioDisparEnemic() {
         if (estat.llançamentEnemicDetectat && estat.escutActivat == false
-                && estat.escuts > 0 && estat.distanciaLlançamentEnemic > 100) {
+                && estat.escuts > 0 && estat.distanciaLlançamentEnemic < 100) {
+            activaEscut();
+        } else if (estat.impactesRebuts > impactes && estat.escutActivat == false
+                && estat.escuts > 0) {
+            impactes = estat.impactesRebuts;
             activaEscut();
         }
     }
