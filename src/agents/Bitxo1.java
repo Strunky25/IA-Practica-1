@@ -128,12 +128,12 @@ public class Bitxo1 extends Agent {
     private void objDistMin(Objecte obj) {
         int tipus = getTipusObj(obj);
         if (tipus != -1) {
-            if((obj.agafaSector() == 2 || obj.agafaSector() == 3)
-                    && obj.agafaDistancia() < distMinSecDosTres[tipus]){
+            if ((obj.agafaSector() == 2 || obj.agafaSector() == 3)
+                    && obj.agafaDistancia() < distMinSecDosTres[tipus]) {
                 distMinSecDosTres[tipus] = obj.agafaDistancia();
                 objPropersSecDosTres[tipus] = obj;
             }
-            if(obj.agafaDistancia() < distMin[tipus]){
+            if (obj.agafaDistancia() < distMin[tipus]) {
                 distMin[tipus] = obj.agafaDistancia();
                 objPropers[tipus] = obj;
             }
@@ -163,25 +163,22 @@ public class Bitxo1 extends Agent {
                     objDistMin(objActual);
                 }
             }
+            //Miramos los recursos aliados
             if (objPropers[RECURS_ALIAT] != null) {
                 switch (objPropers[RECURS_ALIAT].agafaSector()) {
                     case 1:
                         gira(90 - angle);
                         break;
-                    case 2:
-                        mira(objPropers[RECURS_ALIAT]);
-                        break;
-                    case 3:
-                        mira(objPropers[RECURS_ALIAT]);
-                        break;
                     case 4:
-                        gira(360 - (90 - angle));
+                        gira(- (90 - angle));
                         break;
                 }
-            } else if (objPropers[ESCUT] != null && objPropersSecDosTres[ESCUT] != null) {
+                mira(objPropers[RECURS_ALIAT]);
+            } //Si hi ha escuts als costats i davant miram al més proper
+            else if (objPropers[ESCUT] != null && objPropersSecDosTres[ESCUT] != null) {
                 if (distMin[ESCUT] < distMinSecDosTres[ESCUT]) {
                     if (objPropers[ESCUT].agafaSector() == 4) {
-                        gira(360 - (90 - angle));
+                        gira(- (90 - angle));
                     } else if (objPropers[ESCUT].agafaSector() == 1) {
                         gira(90 - angle);
                     }
@@ -189,34 +186,39 @@ public class Bitxo1 extends Agent {
                 } else {
                     mira(objPropersSecDosTres[ESCUT]);
                 }
-            } else if (objPropers[ESCUT] != null && objPropersSecDosTres[ESCUT] == null) {
+            }//Miram si només hi ha un escut davant (sector 2 o 3) i si n'hi ha miram
+            else if (objPropers[ESCUT] == null && objPropersSecDosTres[ESCUT] != null) {
+                mira(objPropersSecDosTres[ESCUT]);
+            }//Miram si només hi ha un escut en el sector 1 o 4 i si n'hi ha ens giram
+            else if (objPropers[ESCUT] != null && objPropersSecDosTres[ESCUT] == null) {
                 if (objPropers[ESCUT].agafaSector() == 4) {
-                    gira(360 - (90 - angle));
+                    gira(-(90 - angle));
                 } else if (objPropers[ESCUT].agafaSector() == 1) {
                     gira(90 - angle);
                 }
                 mira(objPropers[ESCUT]);
-            } else if (objPropers[ESCUT] == null && objPropersSecDosTres[ESCUT] != null) {
-                mira(objPropersSecDosTres[ESCUT]);
             }
-
-            if (objPropers[AGENT] != null && distMin[AGENT] < 30) {
+            //Primer miram si hi ha un agent en el sector 1 o 4 i si n'hi ha ens giram i atacam
+            if (objPropers[AGENT] != null) {
                 if (objPropers[AGENT].agafaSector() == 4) {
-                    gira(360 - (90 - angle));
+                    gira(-(90 - angle));
                 } else if (objPropers[AGENT].agafaSector() == 1) {
                     gira(90 - angle);
                 }
                 mira(objPropers[AGENT]);
                 llançant = true;
-            } else if (estat.llançaments > 0 && objPropersSecDosTres[AGENT] != null) {
+            } //Miram si hi ha un agent davant (sector 2 o 3) i atacam
+            else if (estat.llançaments > 0 && objPropersSecDosTres[AGENT] != null) {
                 mira(objPropersSecDosTres[AGENT]);
                 llançant = true;
-            } else if (estat.llançaments > 0 && objPropersSecDosTres[RECURS_ENEMIC] != null) {
+            } //Miram si hi ha un recurs enemic davant (sector 2 o 3) i atacam 
+            else if (estat.llançaments > 0 && objPropersSecDosTres[RECURS_ENEMIC] != null) {
                 mira(objPropersSecDosTres[RECURS_ENEMIC]);
                 llançant = true;
-            } else if (objPropers[RECURS_ENEMIC] != null) {
+            } //Miram si hi ha un recurs enemic en el sector 1 o 4 i si n'hi ha ens giram i atacam
+            else if (objPropers[RECURS_ENEMIC] != null) {
                 if (objPropers[RECURS_ENEMIC].agafaSector() == 4) {
-                    gira(360 - (90 - angle));
+                    gira(- (90 - angle));
                 } else if (objPropers[RECURS_ENEMIC].agafaSector() == 1) {
                     gira(90 - angle);
                 }
