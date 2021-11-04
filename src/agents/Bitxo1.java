@@ -25,12 +25,11 @@ public class Bitxo1 extends Agent {
     private static final int RECURS_ALIAT = 1;
     private static final int RECURS_ENEMIC = 2;
     private static final int ESCUT = 3;
-    private static final int DESCONEGUT = -1;
 
     private Objecte objPropers[], objPropersSecDosTres[];
     private int distMin[], distMinSecDosTres[];
-    private int repetir, darrer_gir, impactes;
-    private boolean llançant, recLocalitzat, recEneLocalitzat, eneLocalitzat;
+    private int repetir, darrer_gir, impactes, tipusLocalitzat;
+    private boolean llançant;
     private Estat estat;
     private Random random;
     private Accio accio;
@@ -46,7 +45,8 @@ public class Bitxo1 extends Agent {
         System.out.println("Cost total: " + cost);
         // Inicialització de variables que utilitzaré al meu comportament
         repetir = impactes = 0;
-        llançant = eneLocalitzat = recEneLocalitzat = recLocalitzat = false;
+        llançant = false;
+        tipusLocalitzat = RES;
         accio = Accio.ENDAVANT;
         random = new Random();
         objPropersSecDosTres = new Objecte[4];
@@ -57,27 +57,32 @@ public class Bitxo1 extends Agent {
 
     @Override
     public void avaluaComportament() {
-        estat = estatCombat();
-        if (recLocalitzat && objPropers[RECURS_ALIAT] != null) {
-            mira(objPropers[RECURS_ALIAT]);
-            recLocalitzat = false;
-        } else if (estat.indexNau[CENTRAL] != (100 + estat.id) && llançant) {
-            llança();
-            llançant = false;
-        } else if (eneLocalitzat && objPropers[AGENT_ENEMIC] != null) {
-            mira(objPropers[AGENT_ENEMIC]);
-            eneLocalitzat = false;
-            llançant = true;
-        } else if (recEneLocalitzat && objPropers[RECURS_ENEMIC] != null) {
-            mira(objPropers[RECURS_ENEMIC]);
-            recEneLocalitzat = false;
-            llançant = true;
-        } else if (!repetirAccio()) {
+        comprobaLlançament();
+        comprobarLocalitzat();
+        if (tipusLocalitzat == RES && !repetirAccio()) {
+            estat = estatCombat();
             deteccioObjectes();
             deteccioDisparEnemic();
             deteccioParet();
         }
 
+    }
+
+    private void comprobaLlançament() {
+        if (estat.indexNau[CENTRAL] != (100 + estat.id) && llançant) {
+            llança();
+            llançant = false;
+        }
+    }
+
+    private void comprobarLocalitzat() {
+        if (tipusLocalitzat != RES) {
+            if (tipusLocalitzat == AGENT_ENEMIC || tipusLocalitzat == RECURS_ALIAT) {
+                llançant = true;
+            }
+            mira(objPropers[tipusLocalitzat]);
+            tipusLocalitzat = RES;
+        }
     }
 
     private void deteccioParet() {
@@ -124,7 +129,7 @@ public class Bitxo1 extends Agent {
     }
 
     private void initArrayObjectes() {
-        llançant = recLocalitzat = false;
+        llançant = false;
         for (int i = 0; i < objPropers.length; i++) {
             objPropers[i] = null;
             objPropersSecDosTres[i] = null;
@@ -143,7 +148,7 @@ public class Bitxo1 extends Agent {
         for (Objecte obj : estat.objectes) {
             if (obj != null) {
                 int tipus = getTipusObjecte(obj);
-                if (tipus != DESCONEGUT) {
+                if (tipus != RES) {
                     int distObj = obj.agafaDistancia();
                     if ((obj.agafaSector() == 2 || obj.agafaSector() == 3)
                             && distObj < distMinSecDosTres[tipus]) {
@@ -170,18 +175,18 @@ public class Bitxo1 extends Agent {
         } else if (tipusObjecte == Estat.ESCUT) {
             return ESCUT;
         }
-        return DESCONEGUT;
+        return RES;
     }
 
     private void cercaRecursAliat() {
         switch (objPropers[RECURS_ALIAT].agafaSector()) {
             case 1:
                 gira(SECTOR1);
-                recLocalitzat = true;
+                tipusLocalitzat = RECURS_ALIAT;
                 break;
             case 4:
                 gira(SECTOR4);
-                recLocalitzat = true;
+                tipusLocalitzat = RECURS_ALIAT;
                 break;
             default:
                 mira(objPropers[RECURS_ALIAT]);
@@ -199,11 +204,7 @@ public class Bitxo1 extends Agent {
             } else if (objPropers[tipusObj].agafaSector() == 4) {
                 gira(SECTOR4);
             }
-            if (tipusObj == AGENT_ENEMIC) {
-                eneLocalitzat = true;
-            } else if (tipusObj == RECURS_ENEMIC) {
-                recEneLocalitzat = true; // CAMBIAR LOCALITZAT A TIPUS
-            }
+            tipusLocalitzat = tipusObj;
         }
     }
 
