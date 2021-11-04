@@ -41,7 +41,7 @@ public class Bitxo1 extends Agent {
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(5, 0, 600, ANGLE, 50, 5, 0);
+        int cost = atributsAgent(5, 0, 699, ANGLE, 56, 5, 0);
         System.out.println("Cost total: " + cost);
         // Inicialització de variables que utilitzaré al meu comportament
         repetir = impactes = 0;
@@ -63,6 +63,7 @@ public class Bitxo1 extends Agent {
             comprobarLocalitzat();
         } else if (!repetirAccio()) {
             deteccioObjectes();
+            persegueix();
             deteccioDisparEnemic();
             deteccioParet();
         }
@@ -134,11 +135,11 @@ public class Bitxo1 extends Agent {
             objPropersSecDosTres[i] = null;
         }
 
-        distMinSecDosTres[AGENT_ENEMIC] = 250;
+        distMinSecDosTres[AGENT_ENEMIC] = 9999;
         distMinSecDosTres[RECURS_ALIAT] = distMinSecDosTres[ESCUT] = 9999;
         distMinSecDosTres[RECURS_ENEMIC] = MAX_DIST_BALES;
 
-        distMin[AGENT_ENEMIC] = 250;
+        distMin[AGENT_ENEMIC] = 9999;
         distMin[RECURS_ALIAT] = distMin[ESCUT] = 9999;
         distMin[RECURS_ENEMIC] = MAX_DIST_BALES;
     }
@@ -181,7 +182,6 @@ public class Bitxo1 extends Agent {
         switch (objPropers[RECURS_ALIAT].agafaSector()) {
             case 1:
                 gira(SECTOR1);
-
                 break;
             case 4:
                 gira(SECTOR4);
@@ -216,10 +216,29 @@ public class Bitxo1 extends Agent {
             } else if (objPropersSecDosTres[ESCUT] != null) {
                 mira(objPropersSecDosTres[ESCUT]);
             }
-            if (objPropers[AGENT_ENEMIC] != null) {
+            if (objPropers[AGENT_ENEMIC] != null && objPropers[AGENT_ENEMIC].agafaDistancia() < 250) {
                 disparaObjecteEnemic(AGENT_ENEMIC);
             } else if (objPropers[RECURS_ENEMIC] != null) {
                 disparaObjecteEnemic(RECURS_ENEMIC);
+            }
+        }
+    }
+
+    private void persegueix() {
+        if (objPropers[RECURS_ALIAT] == null && objPropers[ESCUT] == null
+                && objPropersSecDosTres[RECURS_ALIAT] == null && objPropersSecDosTres[ESCUT] == null
+                && objPropers[RECURS_ENEMIC] == null && objPropers[RECURS_ENEMIC] == null
+                && objPropers[AGENT_ENEMIC] != null) {
+            switch (objPropers[AGENT_ENEMIC].agafaSector()) {
+                case 1:
+                    gira(SECTOR1);
+                    break;
+                case 4:
+                    gira(SECTOR4);
+                    break;
+                default:
+                    mira(objPropers[AGENT_ENEMIC]);
+                    break;
             }
         }
     }
