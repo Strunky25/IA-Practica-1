@@ -15,26 +15,25 @@ public class Bitxo1 extends Agent {
     static final int CENTRAL = 1;
     static final int DRETA = 2;
 
-    private static final int AGENT = 0;
+    private static final int MAX_DIST_BALES = 400;
+
+    private static final int ANGLE = 60;
+    private static final int SECTOR1 = -(90 - ANGLE);
+    private static final int SECTOR4 = -SECTOR1;
+
+    private static final int AGENT_ENEMIC = 0;
     private static final int RECURS_ALIAT = 1;
     private static final int RECURS_ENEMIC = 2;
     private static final int ESCUT = 3;
+    private static final int DESCONEGUT = -1;
 
-    private static final int MAX_DIST_BALES = 400;
-
+    private Objecte objPropers[], objPropersSecDosTres[];
+    private int distMin[], distMinSecDosTres[];
+    private int repetir, darrer_gir, impactes;
+    private boolean llançant, recLocalitzat, recEneLocalitzat, eneLocalitzat;
     private Estat estat;
     private Random random;
     private Accio accio;
-    private int repetir, darrer_gir;
-    private Objecte objPropers[], objPropersSecDosTres[];
-    private int distMin[], distMinSecDosTres[];
-    private static int angle = 60;
-    private boolean llançant;
-    private boolean recursEnemicLocalitzat;
-    private boolean recursPropiLocalitzat;
-    private boolean enemicLocalitzat;
-    private int impactes;
-    int i = 0;
 
     public Bitxo1(Agents pare) {
         super(pare, "3", "imatges/robotank3.gif");
@@ -43,15 +42,11 @@ public class Bitxo1 extends Agent {
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(5, 0, 600, angle, 30, 5, 0);
+        int cost = atributsAgent(5, 0, 600, ANGLE, 30, 5, 0);
         System.out.println("Cost total: " + cost);
         // Inicialització de variables que utilitzaré al meu comportament
-        repetir = 0;
-        impactes = 0;
-        llançant = false;
-        enemicLocalitzat = false;
-        recursEnemicLocalitzat = false;
-        recursPropiLocalitzat = false;
+        repetir = impactes = 0;
+        llançant = eneLocalitzat = recEneLocalitzat = recLocalitzat = false;
         accio = Accio.ENDAVANT;
         random = new Random();
         objPropersSecDosTres = new Objecte[4];
@@ -62,28 +57,24 @@ public class Bitxo1 extends Agent {
 
     @Override
     public void avaluaComportament() {
-//        System.out.println("Enemic: "+enemicLocalitzat);
-//        System.out.println("RecEne: "+recursEnemicLocalitzat);
-//        System.out.println("RecPro: "+recursPropiLocalitzat);
-//        System.out.println("----------------------");
         estat = estatCombat();
-        if (recursPropiLocalitzat && objPropers[RECURS_ALIAT] != null) {
+        if (recLocalitzat && objPropers[RECURS_ALIAT] != null) {
             mira(objPropers[RECURS_ALIAT]);
-            recursPropiLocalitzat = false;
+            recLocalitzat = false;
         } else if (estat.indexNau[CENTRAL] != (100 + estat.id) && llançant) {
             llança();
             llançant = false;
-        } else if (enemicLocalitzat && objPropers[AGENT] != null) {
-            mira(objPropers[AGENT]);
-            enemicLocalitzat=false;
+        } else if (eneLocalitzat && objPropers[AGENT_ENEMIC] != null) {
+            mira(objPropers[AGENT_ENEMIC]);
+            eneLocalitzat = false;
             llançant = true;
-        } else if (recursEnemicLocalitzat && objPropers[RECURS_ENEMIC] != null) {
+        } else if (recEneLocalitzat && objPropers[RECURS_ENEMIC] != null) {
             mira(objPropers[RECURS_ENEMIC]);
-            recursEnemicLocalitzat=false;
+            recEneLocalitzat = false;
             llançant = true;
         } else if (!repetirAccio()) {
             deteccioObjectes();
-            deteccioDispar();
+            deteccioDisparEnemic();
             deteccioParet();
         }
 
@@ -132,112 +123,101 @@ public class Bitxo1 extends Agent {
         }
     }
 
-    private void initObjectes() {
+    private void initArrayObjectes() {
+        llançant = recLocalitzat = false;
         for (int i = 0; i < objPropers.length; i++) {
             objPropers[i] = null;
             objPropersSecDosTres[i] = null;
         }
 
-        distMinSecDosTres[AGENT] = 300;
+        distMinSecDosTres[AGENT_ENEMIC] = 300;
         distMinSecDosTres[RECURS_ALIAT] = distMinSecDosTres[ESCUT] = 9999;
         distMinSecDosTres[RECURS_ENEMIC] = MAX_DIST_BALES;
 
-        distMin[AGENT] = 300;
+        distMin[AGENT_ENEMIC] = 300;
         distMin[RECURS_ALIAT] = distMin[ESCUT] = 9999;
         distMin[RECURS_ENEMIC] = MAX_DIST_BALES;
     }
 
-    private void objDistMin(Objecte obj) {
-        int tipus = getTipusObj(obj);
-        if (tipus != -1) {
-            if ((obj.agafaSector() == 2 || obj.agafaSector() == 3)
-                    && obj.agafaDistancia() < distMinSecDosTres[tipus]) {
-                distMinSecDosTres[tipus] = obj.agafaDistancia();
-                objPropersSecDosTres[tipus] = obj;
-            }
-            if (obj.agafaDistancia() < distMin[tipus]) {
-                distMin[tipus] = obj.agafaDistancia();
-                objPropers[tipus] = obj;
+    private void objectesDistanciaMinima() {
+        for (Objecte obj : estat.objectes) {
+            if (obj != null) {
+                int tipus = getTipusObjecte(obj);
+                if (tipus != DESCONEGUT) {
+                    int distObj = obj.agafaDistancia();
+                    if ((obj.agafaSector() == 2 || obj.agafaSector() == 3)
+                            && distObj < distMinSecDosTres[tipus]) {
+                        distMinSecDosTres[tipus] = distObj;
+                        objPropersSecDosTres[tipus] = obj;
+                    }
+                    if (distObj < distMin[tipus]) {
+                        distMin[tipus] = distObj;
+                        objPropers[tipus] = obj;
+                    }
+                }
             }
         }
     }
 
-    private int getTipusObj(Objecte obj) {
-        int tipus = -1;
+    private int getTipusObjecte(Objecte obj) {
         int tipusObjecte = obj.agafaDistancia();
         if (tipusObjecte == (100 + estat.id)) {
-            tipus = RECURS_ALIAT;
+            return RECURS_ALIAT;
         } else if (tipusObjecte == Estat.AGENT && !estat.llançant) {
-            tipus = AGENT;
+            return AGENT_ENEMIC;
         } else if (tipusObjecte >= 100 && !estat.llançant) {
-            tipus = RECURS_ENEMIC;
+            return RECURS_ENEMIC;
         } else if (tipusObjecte == Estat.ESCUT) {
-            tipus = ESCUT;
+            return ESCUT;
         }
-        return tipus;
+        return DESCONEGUT;
+    }
+
+    private void cercaRecursAliat() {
+        switch (objPropers[RECURS_ALIAT].agafaSector()) {
+            case 1:
+                gira(SECTOR1);
+                recLocalitzat = true;
+                break;
+            case 4:
+                gira(SECTOR4);
+                recLocalitzat = true;
+                break;
+            default:
+                mira(objPropers[RECURS_ALIAT]);
+                break;
+        }
+    }
+
+    private void disparaObjecteEnemic(int tipusObj) {
+        if (objPropersSecDosTres[tipusObj] != null && estat.llançaments > 0) {
+            mira(objPropersSecDosTres[tipusObj]);
+            llançant = true;
+        } else {
+            if (objPropers[tipusObj].agafaSector() == 1) {
+                gira(SECTOR1);
+            } else if (objPropers[tipusObj].agafaSector() == 4) {
+                gira(SECTOR4);
+            }
+            if (tipusObj == AGENT_ENEMIC) {
+                eneLocalitzat = true;
+            } else if (tipusObj == RECURS_ENEMIC) {
+                recEneLocalitzat = true; // CAMBIAR LOCALITZAT A TIPUS
+            }
+        }
     }
 
     private void deteccioObjectes() {
         if (estat.veigAlgunRecurs || estat.veigAlgunEscut || estat.veigAlgunEnemic) {
-            initObjectes();
-            for (Objecte objActual : estat.objectes) {
-                if (objActual != null) {
-                    objDistMin(objActual);
-                }
-            }
-            if (distMin[AGENT] != 300 || distMin[RECURS_ENEMIC] != 400 || distMin[RECURS_ALIAT] != 9999 || distMin[ESCUT] != 9999) {
-                System.out.println("Enemic: " + distMin[AGENT]);
-                System.out.println("RecEne: " + distMin[RECURS_ENEMIC]);
-                System.out.println("RecPro: " + distMin[RECURS_ALIAT]);
-                System.out.println("Escuts: " + distMin[ESCUT]);
-                System.out.println("--------------------------------------");
-            }
-            //Miramos los recursos aliados
-            llançant = false;
-            recursPropiLocalitzat = false;
+            initArrayObjectes();
+            objectesDistanciaMinima();
             if (objPropers[RECURS_ALIAT] != null) {
-                switch (objPropers[RECURS_ALIAT].agafaSector()) {
-                    case 1:
-                        gira(90 - angle);
-                        recursPropiLocalitzat = true;
-                        break;
-                    case 2:
-                        mira(objPropers[RECURS_ALIAT]);
-                        break;
-                    case 3:
-                        mira(objPropers[RECURS_ALIAT]);
-                        break;
-                    case 4:
-                        gira(-(90 - angle));
-                        recursPropiLocalitzat = true;
-                        break;
-                }
-            } //Primer miram si hi ha un agent en el sector 1 o 4 i si n'hi ha ens giram i atacam
-            else if (objPropers[AGENT] != null) {
-                if (objPropers[AGENT].agafaSector() == 1) {
-                    gira(-(90 - angle));
-                } else if (objPropers[AGENT].agafaSector() == 4) {
-                    gira(90 - angle);
-                }
-                enemicLocalitzat = true;
-            } //Miram si hi ha un agent davant (sector 2 o 3) i atacam
-            else if (estat.llançaments > 0 && objPropersSecDosTres[AGENT] != null) {
-                mira(objPropersSecDosTres[AGENT]);
-                llançant = true;
-            } //Miram si hi ha un recurs enemic davant (sector 2 o 3) i atacam 
-            else if (estat.llançaments > 0 && objPropersSecDosTres[RECURS_ENEMIC] != null) {
-                mira(objPropersSecDosTres[RECURS_ENEMIC]);
-                llançant = true;
-            } //Miram si hi ha un recurs enemic en el sector 1 o 4 i si n'hi ha ens giram i atacam
-            else if (objPropers[RECURS_ENEMIC] != null) {
-                if (objPropers[RECURS_ENEMIC].agafaSector() == 1) {
-                    gira(-(90 - angle));
-                } else if (objPropers[RECURS_ENEMIC].agafaSector() == 4) {
-                    gira(90 - angle);
-                }
-                recursEnemicLocalitzat = true;
-            }//Miram si només hi ha un escut davant (sector 2 o 3) i si n'hi ha miram
-            else if (objPropers[ESCUT] == null && objPropersSecDosTres[ESCUT] != null) {
+                cercaRecursAliat();
+            } else if (objPropers[AGENT_ENEMIC] != null) {
+                disparaObjecteEnemic(AGENT_ENEMIC);
+            } else if (objPropers[RECURS_ENEMIC] != null) {
+                disparaObjecteEnemic(RECURS_ENEMIC);
+            } else if (objPropersSecDosTres[ESCUT] != null) {
                 mira(objPropersSecDosTres[ESCUT]);
             }
         }
@@ -264,9 +244,9 @@ public class Bitxo1 extends Agent {
         }
     }
 
-    private void deteccioDispar() {
+    private void deteccioDisparEnemic() {
         if (estat.llançamentEnemicDetectat && estat.escutActivat == false
-                && estat.escuts > 0 && estat.distanciaLlançamentEnemic > 100) {
+                && estat.escuts > 0 && estat.distanciaLlançamentEnemic > 100) { //< 100??
             activaEscut();
         } else if (estat.impactesRebuts > impactes && estat.escutActivat == false
                 && estat.escuts > 0) {
