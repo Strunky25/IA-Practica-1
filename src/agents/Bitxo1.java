@@ -130,11 +130,11 @@ public class Bitxo1 extends Agent {
             objPropersSecDosTres[i] = null;
         }
 
-        distMinSecDosTres[AGENT_ENEMIC] = 300;
+        distMinSecDosTres[AGENT_ENEMIC] = 250;
         distMinSecDosTres[RECURS_ALIAT] = distMinSecDosTres[ESCUT] = 9999;
         distMinSecDosTres[RECURS_ENEMIC] = MAX_DIST_BALES;
 
-        distMin[AGENT_ENEMIC] = 300;
+        distMin[AGENT_ENEMIC] = 250;
         distMin[RECURS_ALIAT] = distMin[ESCUT] = 9999;
         distMin[RECURS_ENEMIC] = MAX_DIST_BALES;
     }
@@ -160,7 +160,7 @@ public class Bitxo1 extends Agent {
     }
 
     private int getTipusObjecte(Objecte obj) {
-        int tipusObjecte = obj.agafaDistancia();
+        int tipusObjecte = obj.agafaTipus();
         if (tipusObjecte == (100 + estat.id)) {
             return RECURS_ALIAT;
         } else if (tipusObjecte == Estat.AGENT && !estat.llançant) {
@@ -193,7 +193,7 @@ public class Bitxo1 extends Agent {
         if (objPropersSecDosTres[tipusObj] != null && estat.llançaments > 0) {
             mira(objPropersSecDosTres[tipusObj]);
             llançant = true;
-        } else {
+        } else if (objPropers[RECURS_ALIAT] == null) {
             if (objPropers[tipusObj].agafaSector() == 1) {
                 gira(SECTOR1);
             } else if (objPropers[tipusObj].agafaSector() == 4) {
@@ -246,7 +246,7 @@ public class Bitxo1 extends Agent {
 
     private void deteccioDisparEnemic() {
         if (estat.llançamentEnemicDetectat && estat.escutActivat == false
-                && estat.escuts > 0 && estat.distanciaLlançamentEnemic > 100) { //< 100??
+                && estat.escuts > 0 && estat.distanciaLlançamentEnemic < 100) { //< 100??
             activaEscut();
         } else if (estat.impactesRebuts > impactes && estat.escutActivat == false
                 && estat.escuts > 0) {
