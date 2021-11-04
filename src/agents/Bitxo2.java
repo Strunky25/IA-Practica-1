@@ -40,6 +40,7 @@ public class Bitxo2 extends Agent {
 
     @Override
     public void avaluaComportament() {
+
         if (!repetirAccio()) {
             estat = estatCombat();
             deteccioRecursos();
@@ -188,7 +189,7 @@ public class Bitxo2 extends Agent {
     }
 
     private void deteccioDispar() {
-        if (estat.llançamentEnemicDetectat && estat.escutActivat == false 
+        if (estat.llançamentEnemicDetectat && estat.escutActivat == false
                 && estat.escuts > 0 && estat.distanciaLlançamentEnemic > 100) {
             activaEscut();
         }

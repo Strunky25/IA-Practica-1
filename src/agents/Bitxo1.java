@@ -30,7 +30,11 @@ public class Bitxo1 extends Agent {
     private int distMin[], distMinSecDosTres[];
     private static int angle = 60;
     private boolean llançant;
+    private boolean recursEnemicLocalitzat;
+    private boolean recursPropiLocalitzat;
+    private boolean enemicLocalitzat;
     private int impactes;
+    int i = 0;
 
     public Bitxo1(Agents pare) {
         super(pare, "3", "imatges/robotank3.gif");
@@ -45,6 +49,9 @@ public class Bitxo1 extends Agent {
         repetir = 0;
         impactes = 0;
         llançant = false;
+        enemicLocalitzat = false;
+        recursEnemicLocalitzat = false;
+        recursPropiLocalitzat = false;
         accio = Accio.ENDAVANT;
         random = new Random();
         objPropersSecDosTres = new Objecte[4];
@@ -55,10 +62,25 @@ public class Bitxo1 extends Agent {
 
     @Override
     public void avaluaComportament() {
+//        System.out.println("Enemic: "+enemicLocalitzat);
+//        System.out.println("RecEne: "+recursEnemicLocalitzat);
+//        System.out.println("RecPro: "+recursPropiLocalitzat);
+//        System.out.println("----------------------");
         estat = estatCombat();
-        if (estat.indexNau[CENTRAL] != (100 + estat.id) && llançant) {
+        if (recursPropiLocalitzat && objPropers[RECURS_ALIAT] != null) {
+            mira(objPropers[RECURS_ALIAT]);
+            recursPropiLocalitzat = false;
+        } else if (estat.indexNau[CENTRAL] != (100 + estat.id) && llançant) {
             llança();
             llançant = false;
+        } else if (enemicLocalitzat && objPropers[AGENT] != null) {
+            mira(objPropers[AGENT]);
+            enemicLocalitzat=false;
+            llançant = true;
+        } else if (recursEnemicLocalitzat && objPropers[RECURS_ENEMIC] != null) {
+            mira(objPropers[RECURS_ENEMIC]);
+            recursEnemicLocalitzat=false;
+            llançant = true;
         } else if (!repetirAccio()) {
             deteccioObjectes();
             deteccioDispar();
@@ -163,50 +185,41 @@ public class Bitxo1 extends Agent {
                     objDistMin(objActual);
                 }
             }
+            if (distMin[AGENT] != 300 || distMin[RECURS_ENEMIC] != 400 || distMin[RECURS_ALIAT] != 9999 || distMin[ESCUT] != 9999) {
+                System.out.println("Enemic: " + distMin[AGENT]);
+                System.out.println("RecEne: " + distMin[RECURS_ENEMIC]);
+                System.out.println("RecPro: " + distMin[RECURS_ALIAT]);
+                System.out.println("Escuts: " + distMin[ESCUT]);
+                System.out.println("--------------------------------------");
+            }
             //Miramos los recursos aliados
+            llançant = false;
+            recursPropiLocalitzat = false;
             if (objPropers[RECURS_ALIAT] != null) {
                 switch (objPropers[RECURS_ALIAT].agafaSector()) {
                     case 1:
                         gira(90 - angle);
+                        recursPropiLocalitzat = true;
+                        break;
+                    case 2:
+                        mira(objPropers[RECURS_ALIAT]);
+                        break;
+                    case 3:
+                        mira(objPropers[RECURS_ALIAT]);
                         break;
                     case 4:
-                        gira(- (90 - angle));
+                        gira(-(90 - angle));
+                        recursPropiLocalitzat = true;
                         break;
                 }
-                mira(objPropers[RECURS_ALIAT]);
-            } //Si hi ha escuts als costats i davant miram al més proper
-            else if (objPropers[ESCUT] != null && objPropersSecDosTres[ESCUT] != null) {
-                if (distMin[ESCUT] < distMinSecDosTres[ESCUT]) {
-                    if (objPropers[ESCUT].agafaSector() == 4) {
-                        gira(- (90 - angle));
-                    } else if (objPropers[ESCUT].agafaSector() == 1) {
-                        gira(90 - angle);
-                    }
-                    mira(objPropers[ESCUT]);
-                } else {
-                    mira(objPropersSecDosTres[ESCUT]);
-                }
-            }//Miram si només hi ha un escut davant (sector 2 o 3) i si n'hi ha miram
-            else if (objPropers[ESCUT] == null && objPropersSecDosTres[ESCUT] != null) {
-                mira(objPropersSecDosTres[ESCUT]);
-            }//Miram si només hi ha un escut en el sector 1 o 4 i si n'hi ha ens giram
-            else if (objPropers[ESCUT] != null && objPropersSecDosTres[ESCUT] == null) {
-                if (objPropers[ESCUT].agafaSector() == 4) {
+            } //Primer miram si hi ha un agent en el sector 1 o 4 i si n'hi ha ens giram i atacam
+            else if (objPropers[AGENT] != null) {
+                if (objPropers[AGENT].agafaSector() == 1) {
                     gira(-(90 - angle));
-                } else if (objPropers[ESCUT].agafaSector() == 1) {
+                } else if (objPropers[AGENT].agafaSector() == 4) {
                     gira(90 - angle);
                 }
-                mira(objPropers[ESCUT]);
-            }
-            //Primer miram si hi ha un agent en el sector 1 o 4 i si n'hi ha ens giram i atacam
-            if (objPropers[AGENT] != null) {
-                if (objPropers[AGENT].agafaSector() == 4) {
-                    gira(-(90 - angle));
-                } else if (objPropers[AGENT].agafaSector() == 1) {
-                    gira(90 - angle);
-                }
-                mira(objPropers[AGENT]);
-                llançant = true;
+                enemicLocalitzat = true;
             } //Miram si hi ha un agent davant (sector 2 o 3) i atacam
             else if (estat.llançaments > 0 && objPropersSecDosTres[AGENT] != null) {
                 mira(objPropersSecDosTres[AGENT]);
@@ -217,13 +230,15 @@ public class Bitxo1 extends Agent {
                 llançant = true;
             } //Miram si hi ha un recurs enemic en el sector 1 o 4 i si n'hi ha ens giram i atacam
             else if (objPropers[RECURS_ENEMIC] != null) {
-                if (objPropers[RECURS_ENEMIC].agafaSector() == 4) {
-                    gira(- (90 - angle));
-                } else if (objPropers[RECURS_ENEMIC].agafaSector() == 1) {
+                if (objPropers[RECURS_ENEMIC].agafaSector() == 1) {
+                    gira(-(90 - angle));
+                } else if (objPropers[RECURS_ENEMIC].agafaSector() == 4) {
                     gira(90 - angle);
                 }
-                mira(objPropers[RECURS_ENEMIC]);
-                llançant = true;
+                recursEnemicLocalitzat = true;
+            }//Miram si només hi ha un escut davant (sector 2 o 3) i si n'hi ha miram
+            else if (objPropers[ESCUT] == null && objPropersSecDosTres[ESCUT] != null) {
+                mira(objPropersSecDosTres[ESCUT]);
             }
         }
     }
