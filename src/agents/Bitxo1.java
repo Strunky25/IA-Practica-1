@@ -26,8 +26,8 @@ public class Bitxo1 extends Agent {
     private Random random;
     private Accio accio;
     private int repetir, darrer_gir;
-    private Objecte objPropersSecDosTres[], objPropers[];
-    private int distMinSecDosTres[], distMin[];
+    private Objecte objPropers[], objPropersSecDosTres[];
+    private int distMin[], distMinSecDosTres[];
     private static int angle = 60;
     private boolean llançant;
     private int impactes;
@@ -110,57 +110,58 @@ public class Bitxo1 extends Agent {
         }
     }
 
+    private void initObjectes() {
+        for (int i = 0; i < objPropers.length; i++) {
+            objPropers[i] = null;
+            objPropersSecDosTres[i] = null;
+        }
+
+        distMinSecDosTres[AGENT] = 300;
+        distMinSecDosTres[RECURS_ALIAT] = distMinSecDosTres[ESCUT] = 9999;
+        distMinSecDosTres[RECURS_ENEMIC] = MAX_DIST_BALES;
+
+        distMin[AGENT] = 300;
+        distMin[RECURS_ALIAT] = distMin[ESCUT] = 9999;
+        distMin[RECURS_ENEMIC] = MAX_DIST_BALES;
+    }
+
+    private void objDistMin(Objecte obj) {
+        int tipus = getTipusObj(obj);
+        if (tipus != -1) {
+            if((obj.agafaSector() == 2 || obj.agafaSector() == 3)
+                    && obj.agafaDistancia() < distMinSecDosTres[tipus]){
+                distMinSecDosTres[tipus] = obj.agafaDistancia();
+                objPropersSecDosTres[tipus] = obj;
+            }
+            if(obj.agafaDistancia() < distMin[tipus]){
+                distMin[tipus] = obj.agafaDistancia();
+                objPropers[tipus] = obj;
+            }
+        }
+    }
+
+    private int getTipusObj(Objecte obj) {
+        int tipus = -1;
+        int tipusObjecte = obj.agafaDistancia();
+        if (tipusObjecte == (100 + estat.id)) {
+            tipus = RECURS_ALIAT;
+        } else if (tipusObjecte == Estat.AGENT && !estat.llançant) {
+            tipus = AGENT;
+        } else if (tipusObjecte >= 100 && tipusObjecte != (100 + estat.id)
+                && !estat.llançant) {
+            tipus = RECURS_ENEMIC;
+        } else if (tipusObjecte == Estat.ESCUT) {
+            tipus = ESCUT;
+        }
+        return tipus;
+    }
+
     private void deteccioObjectes() {
         if (estat.veigAlgunRecurs || estat.veigAlgunEscut || estat.veigAlgunEnemic) {
-            distMinSecDosTres[AGENT] = 300;
-            distMinSecDosTres[RECURS_ALIAT] = distMinSecDosTres[ESCUT] = 9999;
-            distMinSecDosTres[RECURS_ENEMIC] = MAX_DIST_BALES;
-
-            distMin[AGENT] = 300;
-            distMin[RECURS_ALIAT] = distMin[ESCUT] = 9999;
-            distMin[RECURS_ENEMIC] = MAX_DIST_BALES;
+            initObjectes();
             for (Objecte objActual : estat.objectes) {
                 if (objActual != null) {
-                    if (objActual.agafaTipus() == (100 + estat.id)) {
-                        if (objActual.agafaDistancia() < distMin[RECURS_ALIAT]) {
-                            distMin[RECURS_ALIAT] = objActual.agafaDistancia();
-                            objPropers[RECURS_ALIAT] = objActual;
-                        }
-                    } else if (objActual.agafaTipus() == Estat.AGENT && !estat.llançant) {
-                        if (objActual.agafaSector() == 2 || objActual.agafaSector() == 3) {
-                            if (objActual.agafaDistancia() < distMinSecDosTres[AGENT]) {
-                                objPropersSecDosTres[AGENT] = objActual;
-                            }
-                        } else {
-                            if (objActual.agafaDistancia() < distMin[AGENT]) {
-                                objPropers[AGENT] = objActual;
-                            }
-                        }
-                    } else if ((objActual.agafaTipus() >= 100) && !estat.llançant) {
-                        if (objActual.agafaSector() == 2 || objActual.agafaSector() == 3) {
-                            if (objActual.agafaDistancia() < distMinSecDosTres[RECURS_ENEMIC]) {
-                                distMinSecDosTres[RECURS_ENEMIC] = objActual.agafaDistancia();
-                                objPropersSecDosTres[RECURS_ENEMIC] = objActual;
-                            }
-                        } else {
-                            if (objActual.agafaDistancia() < distMin[RECURS_ENEMIC]) {
-                                distMin[RECURS_ENEMIC] = objActual.agafaDistancia();
-                                objPropers[RECURS_ENEMIC] = objActual;
-                            }
-                        }
-                    } else if (objActual.agafaTipus() == Estat.ESCUT) {
-                        if (objActual.agafaSector() == 2 || objActual.agafaSector() == 3) {
-                            if (objActual.agafaDistancia() < distMinSecDosTres[ESCUT]) {
-                                distMinSecDosTres[ESCUT] = objActual.agafaDistancia();
-                                objPropersSecDosTres[ESCUT] = objActual;
-                            }
-                        } else {
-                            if (objActual.agafaDistancia() < distMin[ESCUT]) {
-                                distMin[ESCUT] = objActual.agafaDistancia();
-                                objPropers[ESCUT] = objActual;
-                            }
-                        }
-                    }
+                    objDistMin(objActual);
                 }
             }
             if (objPropers[RECURS_ALIAT] != null) {
