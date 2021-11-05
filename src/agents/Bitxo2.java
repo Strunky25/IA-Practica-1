@@ -141,15 +141,15 @@ public class Bitxo2 extends Agent {
                     activaEscut();
                 }
             } else if (estat.objecteVisor[DRETA] == PARET && estat.distanciaVisors[DRETA] < 25) {
-                enrere();
+                // enrere();
                 accio = Accio.ESQUERRA;
                 repetir = 2;
             } else if (estat.objecteVisor[ESQUERRA] == PARET && estat.distanciaVisors[ESQUERRA] < 25) {
-                enrere();
+                // enrere();
                 accio = Accio.DRETA;
                 repetir = 2;
             } else {
-                enrere();
+                //   enrere();
                 accio = Accio.VOLTEJ;
                 repetir = 1;
             }
@@ -250,7 +250,7 @@ public class Bitxo2 extends Agent {
 
     private boolean repetirAccio() {
         if (repetir != 0) {
-            atura();
+            //atura();
             switch (accio) {
                 case ESQUERRA:
                     darrer_gir = 10 + random.nextInt(10);
