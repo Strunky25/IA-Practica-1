@@ -5,7 +5,7 @@ package agents;
  */
 import java.util.Random;
 
-public class Bitxo1 extends Agent {
+public class Bitxo7 extends Agent {
 
     static final int PARET = 0;
     static final int BITXO = 1;
@@ -34,7 +34,7 @@ public class Bitxo1 extends Agent {
     private Random random;
     private Accio accio;
 
-    public Bitxo1(Agents pare) {
+    public Bitxo7(Agents pare) {
         super(pare, "Lift", "imatges/calamardo1.gif");
     }
 
