@@ -134,20 +134,20 @@ public class Bitxo2 extends Agent {
     private void deteccioParet() {
         if (estat.enCollisio) {
             //Si estic colisionant amb l'enemic per davant i me queden bales dispar
-            if (estat.objecteVisor[CENTRAL] == BITXO && estat.llançaments > 0 && temps > 0 && estat.distanciaVisors[CENTRAL] < 10) {
+            if (estat.objecteVisor[CENTRAL] == BITXO && estat.llançaments > 0 && temps < 0 && estat.distanciaVisors[CENTRAL] < 10) {
                 llança();
                 temps = 10;
                 if (estat.escutActivat == false && estat.escuts > 0) {
                     activaEscut();
                 }
             } else if (estat.objecteVisor[DRETA] == PARET && estat.distanciaVisors[DRETA] < 25) {
-                // enrere();
-                accio = Accio.ESQUERRA;
-                repetir = 2;
+                //enrere();
+                accio = Accio.ESQUERRA_COLISIO;
+                repetir = 1;
             } else if (estat.objecteVisor[ESQUERRA] == PARET && estat.distanciaVisors[ESQUERRA] < 25) {
-                // enrere();
-                accio = Accio.DRETA;
-                repetir = 2;
+                //enrere();
+                accio = Accio.DRETA_COLISIO;
+                repetir = 1;
             } else {
                 //   enrere();
                 accio = Accio.VOLTEJ;
@@ -253,10 +253,16 @@ public class Bitxo2 extends Agent {
             //atura();
             switch (accio) {
                 case ESQUERRA:
-                    darrer_gir = 10 + random.nextInt(10);
+                    darrer_gir = 10 + random.nextInt(10);//20-40 
                     break;
                 case DRETA:
                     darrer_gir = -(10 + random.nextInt(10));
+                    break;
+                case ESQUERRA_COLISIO:
+                    darrer_gir = 50 + random.nextInt(10);//20-40 
+                    break;
+                case DRETA_COLISIO:
+                    darrer_gir = -(50 + random.nextInt(10));
                     break;
                 case VOLTEJ:
                     darrer_gir = 180 + (random.nextInt(90) - 45); //Gira 135-225 grados
@@ -273,6 +279,8 @@ public class Bitxo2 extends Agent {
     private enum Accio {
         ESQUERRA,
         DRETA,
+        ESQUERRA_COLISIO,
+        DRETA_COLISIO,
         VOLTEJ,
         ENDAVANT,
     }
