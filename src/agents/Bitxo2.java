@@ -259,10 +259,10 @@ public class Bitxo2 extends Agent {
                     darrer_gir = -(10 + random.nextInt(10));
                     break;
                 case ESQUERRA_COLISIO:
-                    darrer_gir = 50 + random.nextInt(10);//20-40 
+                    darrer_gir = 70 + random.nextInt(10);
                     break;
                 case DRETA_COLISIO:
-                    darrer_gir = -(50 + random.nextInt(10));
+                    darrer_gir = -(70 + random.nextInt(10));
                     break;
                 case VOLTEJ:
                     darrer_gir = 180 + (random.nextInt(90) - 45); //Gira 135-225 grados
