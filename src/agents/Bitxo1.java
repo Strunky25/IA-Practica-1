@@ -41,7 +41,7 @@ public class Bitxo1 extends Agent {
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(5, 4, 699, ANGLE, 0, 5, 0);
+        int cost = atributsAgent(5, 4, 699, ANGLE, 56, 5, 0);
         System.out.println("Cost total: " + cost);
 
         repetir = impactes = darrer_gir = 0;
@@ -149,7 +149,7 @@ public class Bitxo1 extends Agent {
                 accio = Accio.ESQUERRA;
             }
             repetir = 3;
-        } else if (estat.distanciaVisors[ESQUERRA] < 35
+        } else if (estat.distanciaVisors[ESQUERRA] < 25
                 && estat.objecteVisor[ESQUERRA] == PARET) {
             if ((estat.distanciaVisors[ESQUERRA] <= estat.distanciaVisors[DRETA]) && estat.objecteVisor[DRETA] == PARET) {
                 accio = Accio.DRETA;
@@ -160,7 +160,7 @@ public class Bitxo1 extends Agent {
             }
             accio = Accio.DRETA;
             repetir = 3;
-        } else if (estat.distanciaVisors[DRETA] < 35
+        } else if (estat.distanciaVisors[DRETA] < 25
                 && estat.objecteVisor[DRETA] == PARET) {
             if ((estat.distanciaVisors[DRETA] <= estat.distanciaVisors[ESQUERRA]) && estat.objecteVisor[ESQUERRA] == PARET) {
                 accio = Accio.ESQUERRA;
