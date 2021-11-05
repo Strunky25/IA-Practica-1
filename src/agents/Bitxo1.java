@@ -17,9 +17,9 @@ public class Bitxo1 extends Agent {
 
     private static final int MAX_DIST_BALES = 400;
 
-    private static final int ANGLE = 60;
-    private static final int SECTOR1 = -(90 - ANGLE);
-    private static final int SECTOR4 = -SECTOR1;
+    private static final int ANGLE = 45;
+    private static final int SECTOR4 = 90 - ANGLE;
+    private static final int SECTOR1 = -SECTOR4;
 
     private static final int AGENT_ENEMIC = 0;
     private static final int RECURS_ALIAT = 1;
@@ -28,23 +28,23 @@ public class Bitxo1 extends Agent {
 
     private Objecte objPropers[], objPropersSecDosTres[];
     private int distMin[], distMinSecDosTres[];
-    private int repetir, darrer_gir, impactes, tipusLocalitzat;
+    private int repetir, darrer_gir, impactes, tipusLocalitzat, cooldownLlançament;
     private boolean llançant;
     private Estat estat;
     private Random random;
     private Accio accio;
 
     public Bitxo1(Agents pare) {
-        super(pare, "Bitxo 1", "imatges/calamardo1.gif");
+        super(pare, "Lift", "imatges/calamardo1.gif");
     }
 
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(5, 4, 699, ANGLE, 56, 5, 0);
+        int cost = atributsAgent(7, 4, 699, ANGLE, 54, 5, 0);
         System.out.println("Cost total: " + cost);
 
-        repetir = impactes = darrer_gir = 0;
+        repetir = impactes = darrer_gir = cooldownLlançament = 0;
         llançant = false;
         tipusLocalitzat = RES;
         accio = Accio.ENDAVANT;
@@ -55,6 +55,7 @@ public class Bitxo1 extends Agent {
 
     @Override
     public void avaluaComportament() {
+        //System.out.println(temps);
         estat = estatCombat();
         comprobarLlançament();
         if (tipusLocalitzat != RES) {
@@ -65,10 +66,11 @@ public class Bitxo1 extends Agent {
             deteccioDisparEnemic();
             deteccioParet();
         }
+        cooldownLlançament--;
     }
 
     private void comprobarLlançament() {
-        if (estat.indexNau[CENTRAL] != (100 + estat.id) && llançant) {
+        if (estat.indexNau[CENTRAL] != (100 + estat.id) && estat.indexNau[CENTRAL] != Estat.ESCUT && llançant) {
             llança();
             llançant = false;
         }
@@ -86,14 +88,12 @@ public class Bitxo1 extends Agent {
         if (estat.veigAlgunRecurs || estat.veigAlgunEscut || estat.veigAlgunEnemic) {
             initArrayObjectes();
             cercaObjectesMesPropers();
-
             if (objPropers[RECURS_ALIAT] != null) {
                 cercaTipusObjecte(RECURS_ALIAT);
                 tipusLocalitzat = RECURS_ALIAT;
             } else if (objPropersSecDosTres[ESCUT] != null) {
                 mira(objPropersSecDosTres[ESCUT]);
             }
-
             if (objPropers[AGENT_ENEMIC] != null && objPropers[AGENT_ENEMIC].agafaDistancia() < 250) {
                 disparaObjecteEnemic(AGENT_ENEMIC);
             } else if (objPropers[RECURS_ENEMIC] != null && objPropers[RECURS_ENEMIC].agafaDistancia() < 400) {
@@ -132,45 +132,47 @@ public class Bitxo1 extends Agent {
     private void deteccioParet() {
         if (estat.enCollisio) {
             //Si estic colisionant amb l'enemic per davant i me queden bales dispar
-            if (estat.objecteVisor[CENTRAL] == BITXO && estat.llançaments > 0) {
+            if (estat.objecteVisor[CENTRAL] == BITXO && estat.llançaments > 0 && cooldownLlançament < 0 && estat.distanciaVisors[CENTRAL] < 10) {
                 llança();
+                cooldownLlançament = 10;
                 if (estat.escutActivat == false && estat.escuts > 0) {
                     activaEscut();
                 }
+            } else if (estat.objecteVisor[CENTRAL] == PARET && estat.distanciaVisors[CENTRAL] < 25) {
+                //enrere();
+                accio = Accio.VOLTEJ;
+                repetir = 1;
+            } else if (estat.objecteVisor[DRETA] == PARET && estat.distanciaVisors[DRETA] < 25) {
+                //enrere();
+                accio = Accio.ESQUERRA_COLISIO;
+                repetir = 1;
+            } else if (estat.objecteVisor[ESQUERRA] == PARET && estat.distanciaVisors[ESQUERRA] < 25) {
+                //enrere();
+                accio = Accio.DRETA_COLISIO;
+                repetir = 1;
             } else {
+                //   enrere();
                 accio = Accio.VOLTEJ;
                 repetir = 1;
             }
-        } else if (estat.distanciaVisors[CENTRAL] < 65
-                && estat.objecteVisor[CENTRAL] == PARET) {
-            if (random.nextBoolean()) {
+        } else if (estat.distanciaVisors[CENTRAL] <= 50 && estat.objecteVisor[CENTRAL] == PARET) {
+            if (estat.objecteVisor[ESQUERRA] == PARET && estat.distanciaVisors[ESQUERRA] < estat.distanciaVisors[DRETA]) { //estat.distanciaVisors[ESQUERRA] < estat.distanciaVisors[CENTRAL] &&
                 accio = Accio.DRETA;
-            } else {
+                repetir = 2;
+            } else if (estat.objecteVisor[DRETA] == PARET && estat.distanciaVisors[DRETA] < estat.distanciaVisors[ESQUERRA]) { //estat.distanciaVisors[DRETA] < estat.distanciaVisors[CENTRAL] &&
                 accio = Accio.ESQUERRA;
+                repetir = 2;
             }
-            repetir = 3;
-        } else if (estat.distanciaVisors[ESQUERRA] < 25
-                && estat.objecteVisor[ESQUERRA] == PARET) {
-            if ((estat.distanciaVisors[ESQUERRA] <= estat.distanciaVisors[DRETA]) && estat.objecteVisor[DRETA] == PARET) {
+        } else if (estat.distanciaVisors[CENTRAL] > 50 && estat.distanciaVisors[CENTRAL] < 150 && estat.objecteVisor[CENTRAL] == PARET) {//por si el visor central está a mas de 50 pero yo me estoy acercando a la pared
+            if (estat.objecteVisor[ESQUERRA] == PARET && estat.distanciaVisors[ESQUERRA] < estat.distanciaVisors[DRETA]
+                    && estat.distanciaVisors[ESQUERRA] < 25) {
                 accio = Accio.DRETA;
-                repetir = 3;
-            } else if ((estat.distanciaVisors[ESQUERRA] < estat.distanciaVisors[DRETA]) && estat.objecteVisor[DRETA] == PARET) {
+                repetir = 2;
+            } else if (estat.objecteVisor[DRETA] == PARET && estat.distanciaVisors[DRETA] < estat.distanciaVisors[ESQUERRA]
+                    && estat.distanciaVisors[DRETA] < 25) {
                 accio = Accio.ESQUERRA;
-                repetir = 3;
+                repetir = 2;
             }
-            accio = Accio.DRETA;
-            repetir = 3;
-        } else if (estat.distanciaVisors[DRETA] < 25
-                && estat.objecteVisor[DRETA] == PARET) {
-            if ((estat.distanciaVisors[DRETA] <= estat.distanciaVisors[ESQUERRA]) && estat.objecteVisor[ESQUERRA] == PARET) {
-                accio = Accio.ESQUERRA;
-                repetir = 3;
-            } else if ((estat.distanciaVisors[DRETA] < estat.distanciaVisors[ESQUERRA]) && estat.objecteVisor[ESQUERRA] == PARET) {
-                accio = Accio.DRETA;
-                repetir = 3;
-            }
-            accio = Accio.ESQUERRA;
-            repetir = 3;
         } else {
             endavant();
         }
@@ -249,12 +251,19 @@ public class Bitxo1 extends Agent {
 
     private boolean repetirAccio() {
         if (repetir != 0) {
+            //atura();
             switch (accio) {
                 case ESQUERRA:
-                    darrer_gir = 10 + random.nextInt(10);
+                    darrer_gir = 10 + random.nextInt(10);//20-40 
                     break;
                 case DRETA:
                     darrer_gir = -(10 + random.nextInt(10));
+                    break;
+                case ESQUERRA_COLISIO:
+                    darrer_gir = 70 + random.nextInt(10);
+                    break;
+                case DRETA_COLISIO:
+                    darrer_gir = -(70 + random.nextInt(10));
                     break;
                 case VOLTEJ:
                     darrer_gir = 180 + (random.nextInt(90) - 45); //Gira 135-225 grados
@@ -271,6 +280,8 @@ public class Bitxo1 extends Agent {
     private enum Accio {
         ESQUERRA,
         DRETA,
+        ESQUERRA_COLISIO,
+        DRETA_COLISIO,
         VOLTEJ,
         ENDAVANT,
     }

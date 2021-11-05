@@ -18,8 +18,8 @@ public class Bitxo2 extends Agent {
     private static final int MAX_DIST_BALES = 400;
 
     private static final int ANGLE = 45;
-    private static final int SECTOR1 = -(90 - ANGLE);
-    private static final int SECTOR4 = -SECTOR1;
+    private static final int SECTOR4 = 90 - ANGLE;
+    private static final int SECTOR1 = -SECTOR4;
 
     private static final int AGENT_ENEMIC = 0;
     private static final int RECURS_ALIAT = 1;
@@ -28,7 +28,7 @@ public class Bitxo2 extends Agent {
 
     private Objecte objPropers[], objPropersSecDosTres[];
     private int distMin[], distMinSecDosTres[];
-    private int repetir, darrer_gir, impactes, tipusLocalitzat, temps;
+    private int repetir, darrer_gir, impactes, tipusLocalitzat, cooldownLlançament;
     private boolean llançant;
     private Estat estat;
     private Random random;
@@ -41,10 +41,10 @@ public class Bitxo2 extends Agent {
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(6, 4, 699, ANGLE, 56, 5, 0);
+        int cost = atributsAgent(5, 4, 699, ANGLE, 54, 5, 0);
         System.out.println("Cost total: " + cost);
 
-        repetir = impactes = darrer_gir = temps = 1;
+        repetir = impactes = darrer_gir = cooldownLlançament = 0;
         llançant = false;
         tipusLocalitzat = RES;
         accio = Accio.ENDAVANT;
@@ -66,11 +66,11 @@ public class Bitxo2 extends Agent {
             deteccioDisparEnemic();
             deteccioParet();
         }
-        temps--;
+        cooldownLlançament--;
     }
 
     private void comprobarLlançament() {
-        if (estat.indexNau[CENTRAL] != (100 + estat.id) && llançant && temps > 0) {
+        if (estat.indexNau[CENTRAL] != (100 + estat.id) && estat.indexNau[CENTRAL] != Estat.ESCUT && llançant) {
             llança();
             llançant = false;
         }
@@ -79,7 +79,6 @@ public class Bitxo2 extends Agent {
     private void comprobarLocalitzat() {
         if (tipusLocalitzat == AGENT_ENEMIC || tipusLocalitzat == RECURS_ENEMIC) {
             llançant = true;
-            temps = 5;
         }
         mira(objPropers[tipusLocalitzat]);
         tipusLocalitzat = RES;
@@ -89,7 +88,6 @@ public class Bitxo2 extends Agent {
         if (estat.veigAlgunRecurs || estat.veigAlgunEscut || estat.veigAlgunEnemic) {
             initArrayObjectes();
             cercaObjectesMesPropers();
-
             if (objPropers[RECURS_ALIAT] != null) {
                 cercaTipusObjecte(RECURS_ALIAT);
                 tipusLocalitzat = RECURS_ALIAT;
@@ -134,12 +132,16 @@ public class Bitxo2 extends Agent {
     private void deteccioParet() {
         if (estat.enCollisio) {
             //Si estic colisionant amb l'enemic per davant i me queden bales dispar
-            if (estat.objecteVisor[CENTRAL] == BITXO && estat.llançaments > 0 && temps < 0 && estat.distanciaVisors[CENTRAL] < 10) {
+            if (estat.objecteVisor[CENTRAL] == BITXO && estat.llançaments > 0 && cooldownLlançament < 0 && estat.distanciaVisors[CENTRAL] < 10) {
                 llança();
-                temps = 10;
+                cooldownLlançament = 10;
                 if (estat.escutActivat == false && estat.escuts > 0) {
                     activaEscut();
                 }
+            } else if (estat.objecteVisor[CENTRAL] == PARET && estat.distanciaVisors[CENTRAL] < 25) {
+                //enrere();
+                accio = Accio.VOLTEJ;
+                repetir = 1;
             } else if (estat.objecteVisor[DRETA] == PARET && estat.distanciaVisors[DRETA] < 25) {
                 //enrere();
                 accio = Accio.ESQUERRA_COLISIO;
@@ -153,7 +155,7 @@ public class Bitxo2 extends Agent {
                 accio = Accio.VOLTEJ;
                 repetir = 1;
             }
-        } else if (estat.distanciaVisors[CENTRAL] < 50 && estat.objecteVisor[CENTRAL] == PARET) {
+        } else if (estat.distanciaVisors[CENTRAL] <= 50 && estat.objecteVisor[CENTRAL] == PARET) {
             if (estat.objecteVisor[ESQUERRA] == PARET && estat.distanciaVisors[ESQUERRA] < estat.distanciaVisors[DRETA]) { //estat.distanciaVisors[ESQUERRA] < estat.distanciaVisors[CENTRAL] &&
                 accio = Accio.DRETA;
                 repetir = 2;
@@ -237,7 +239,6 @@ public class Bitxo2 extends Agent {
         if (objPropersSecDosTres[tipusObj] != null && estat.llançaments > 0) {
             mira(objPropersSecDosTres[tipusObj]);
             llançant = true;
-            temps = 10;
         } else if (tipusLocalitzat == RES && estat.llançaments > 0) {
             if (objPropers[tipusObj].agafaSector() == 1) {
                 gira(SECTOR1);
