@@ -87,11 +87,14 @@ public class Bitxo1 extends Agent {
 
     private void deteccioParet() {
         if (estat.enCollisio) {
-            if (estat.objecteVisor[CENTRAL] == BITXO) {
+            if (estat.objecteVisor[CENTRAL] == BITXO && estat.llançaments > 0) {
                 llança();
             } else {
                 accio = Accio.VOLTEJ;
                 repetir = 1;
+            }
+            if (estat.escutActivat == false && estat.escuts > 0) {
+                activaEscut();
             }
         } else if (estat.distanciaVisors[CENTRAL] < 65
                 && estat.objecteVisor[CENTRAL] == PARET) {
@@ -137,11 +140,11 @@ public class Bitxo1 extends Agent {
 
         distMinSecDosTres[AGENT_ENEMIC] = 9999;
         distMinSecDosTres[RECURS_ALIAT] = distMinSecDosTres[ESCUT] = 9999;
-        distMinSecDosTres[RECURS_ENEMIC] = MAX_DIST_BALES;
+        distMinSecDosTres[RECURS_ENEMIC] = 9999;
 
         distMin[AGENT_ENEMIC] = 9999;
         distMin[RECURS_ALIAT] = distMin[ESCUT] = 9999;
-        distMin[RECURS_ENEMIC] = MAX_DIST_BALES;
+        distMin[RECURS_ENEMIC] = 9999;
     }
 
     private void objectesDistanciaMinima() {
@@ -218,27 +221,42 @@ public class Bitxo1 extends Agent {
             }
             if (objPropers[AGENT_ENEMIC] != null && objPropers[AGENT_ENEMIC].agafaDistancia() < 250) {
                 disparaObjecteEnemic(AGENT_ENEMIC);
-            } else if (objPropers[RECURS_ENEMIC] != null) {
+            } else if (objPropers[RECURS_ENEMIC] != null && objPropers[RECURS_ENEMIC].agafaDistancia() < 400) {
                 disparaObjecteEnemic(RECURS_ENEMIC);
             }
         }
     }
 
     private void persegueix() {
-        if (objPropers[RECURS_ALIAT] == null && objPropers[ESCUT] == null
-                && objPropersSecDosTres[RECURS_ALIAT] == null && objPropersSecDosTres[ESCUT] == null
-                && objPropers[RECURS_ENEMIC] == null && objPropers[RECURS_ENEMIC] == null
-                && objPropers[AGENT_ENEMIC] != null) {
-            switch (objPropers[AGENT_ENEMIC].agafaSector()) {
-                case 1:
-                    gira(SECTOR1);
-                    break;
-                case 4:
-                    gira(SECTOR4);
-                    break;
-                default:
-                    mira(objPropers[AGENT_ENEMIC]);
-                    break;
+        if (estat.llançaments > 0) {
+            if (objPropers[RECURS_ALIAT] == null && objPropers[ESCUT] == null
+                    && objPropersSecDosTres[RECURS_ALIAT] == null && objPropersSecDosTres[ESCUT] == null
+                    && objPropers[AGENT_ENEMIC] != null) {
+                switch (objPropers[AGENT_ENEMIC].agafaSector()) {
+                    case 1:
+                        gira(SECTOR1);
+                        break;
+                    case 4:
+                        gira(SECTOR4);
+                        break;
+                    default:
+                        mira(objPropers[AGENT_ENEMIC]);
+                        break;
+                }
+            } else if (objPropers[RECURS_ALIAT] == null && objPropers[ESCUT] == null
+                    && objPropersSecDosTres[RECURS_ALIAT] == null && objPropersSecDosTres[ESCUT] == null
+                    && (objPropers[RECURS_ENEMIC] != null || objPropers[RECURS_ENEMIC] != null)) {
+                switch (objPropers[RECURS_ENEMIC].agafaSector()) {
+                    case 1:
+                        gira(SECTOR1);
+                        break;
+                    case 4:
+                        gira(SECTOR4);
+                        break;
+                    default:
+                        mira(objPropers[AGENT_ENEMIC]);
+                        break;
+                }
             }
         }
     }
