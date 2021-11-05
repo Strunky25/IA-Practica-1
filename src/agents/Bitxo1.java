@@ -43,7 +43,7 @@ public class Bitxo1 extends Agent {
         // atributsAgents(v,w,dv,av,ll,es,hy)
         int cost = atributsAgent(5, 0, 699, ANGLE, 56, 5, 0);
         System.out.println("Cost total: " + cost);
-        // Inicialització de variables que utilitzaré al meu comportament
+
         repetir = impactes = 0;
         llançant = false;
         tipusLocalitzat = RES;
@@ -58,7 +58,7 @@ public class Bitxo1 extends Agent {
     @Override
     public void avaluaComportament() {
         estat = estatCombat();
-        comprobarLlançament(); //elif?
+        comprobarLlançament();
         if (tipusLocalitzat != RES) {
             comprobarLocalitzat();
         } else if (!repetirAccio()) {
@@ -78,7 +78,7 @@ public class Bitxo1 extends Agent {
     }
 
     private void comprobarLocalitzat() {
-        if (tipusLocalitzat == AGENT_ENEMIC || tipusLocalitzat == RECURS_ALIAT) {
+        if (tipusLocalitzat == AGENT_ENEMIC || tipusLocalitzat == RECURS_ENEMIC) {
             llançant = true;
         }
         mira(objPropers[tipusLocalitzat]);
@@ -89,12 +89,14 @@ public class Bitxo1 extends Agent {
         if (estat.veigAlgunRecurs || estat.veigAlgunEscut || estat.veigAlgunEnemic) {
             initArrayObjectes();
             cercaObjectesMesPropers();
+
             if (objPropers[RECURS_ALIAT] != null) {
                 cercaTipusObjecte(RECURS_ALIAT);
                 tipusLocalitzat = RECURS_ALIAT;
             } else if (objPropersSecDosTres[ESCUT] != null) {
                 mira(objPropersSecDosTres[ESCUT]);
             }
+
             if (objPropers[AGENT_ENEMIC] != null && objPropers[AGENT_ENEMIC].agafaDistancia() < 250) {
                 disparaObjecteEnemic(AGENT_ENEMIC);
             } else if (objPropers[RECURS_ENEMIC] != null && objPropers[RECURS_ENEMIC].agafaDistancia() < 400) {
@@ -118,10 +120,12 @@ public class Bitxo1 extends Agent {
     }
 
     private void deteccioDisparEnemic() {
+        //Si detect dispar enemic a menys de 100px,  li queden escuts i no en té cap d'actiu -> Activa escut 
         if (estat.llançamentEnemicDetectat && estat.escutActivat == false
                 && estat.escuts > 0 && estat.distanciaLlançamentEnemic < 100) {
             activaEscut();
-        } else if (estat.impactesRebuts > impactes && estat.escutActivat == false
+        } //Si ha rebut més impactes que a l'anterior iteració, li queden escuts i no en té cap d'actiu -> Activa escut 
+        else if (estat.impactesRebuts > impactes && estat.escutActivat == false
                 && estat.escuts > 0) {
             impactes = estat.impactesRebuts;
             activaEscut();
@@ -130,15 +134,17 @@ public class Bitxo1 extends Agent {
 
     private void deteccioParet() {
         if (estat.enCollisio) {
+            //Si estic colisionant amb l'enemic per davant i me queden bales dispar
             if (estat.objecteVisor[CENTRAL] == BITXO && estat.llançaments > 0) {
                 llança();
+                if (estat.escutActivat == false && estat.escuts > 0) {
+                    activaEscut();
+                }
             } else {
                 accio = Accio.VOLTEJ;
                 repetir = 1;
             }
-            if (estat.escutActivat == false && estat.escuts > 0) {
-                activaEscut();
-            }
+
         } else if (estat.distanciaVisors[CENTRAL] < 65
                 && estat.objecteVisor[CENTRAL] == PARET) {
             if (random.nextBoolean()) {
@@ -179,15 +185,8 @@ public class Bitxo1 extends Agent {
         for (int i = 0; i < objPropers.length; i++) {
             objPropers[i] = null;
             objPropersSecDosTres[i] = null;
+            distMin[i] = distMinSecDosTres[i] = 9999;
         }
-
-        distMinSecDosTres[AGENT_ENEMIC] = 9999;
-        distMinSecDosTres[RECURS_ALIAT] = distMinSecDosTres[ESCUT] = 9999;
-        distMinSecDosTres[RECURS_ENEMIC] = 9999;
-
-        distMin[AGENT_ENEMIC] = 9999;
-        distMin[RECURS_ALIAT] = distMin[ESCUT] = 9999;
-        distMin[RECURS_ENEMIC] = 9999;
     }
 
     private void cercaObjectesMesPropers() {
