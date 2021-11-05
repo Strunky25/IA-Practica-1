@@ -58,7 +58,7 @@ public class Bitxo1 extends Agent {
     @Override
     public void avaluaComportament() {
         estat = estatCombat();
-        comprobaLlançament();
+        comprobarLlançament(); //elif?
         if (tipusLocalitzat != RES) {
             comprobarLocalitzat();
         } else if (!repetirAccio()) {
@@ -70,7 +70,7 @@ public class Bitxo1 extends Agent {
 
     }
 
-    private void comprobaLlançament() {
+    private void comprobarLlançament() {
         if (estat.indexNau[CENTRAL] != (100 + estat.id) && llançant) {
             llança();
             llançant = false;
@@ -83,6 +83,49 @@ public class Bitxo1 extends Agent {
         }
         mira(objPropers[tipusLocalitzat]);
         tipusLocalitzat = RES;
+    }
+
+    private void deteccioObjectes() {
+        if (estat.veigAlgunRecurs || estat.veigAlgunEscut || estat.veigAlgunEnemic) {
+            initArrayObjectes();
+            cercaObjectesMesPropers();
+            if (objPropers[RECURS_ALIAT] != null) {
+                cercaTipusObjecte(RECURS_ALIAT);
+                tipusLocalitzat = RECURS_ALIAT;
+            } else if (objPropersSecDosTres[ESCUT] != null) {
+                mira(objPropersSecDosTres[ESCUT]);
+            }
+            if (objPropers[AGENT_ENEMIC] != null && objPropers[AGENT_ENEMIC].agafaDistancia() < 250) {
+                disparaObjecteEnemic(AGENT_ENEMIC);
+            } else if (objPropers[RECURS_ENEMIC] != null && objPropers[RECURS_ENEMIC].agafaDistancia() < 400) {
+                disparaObjecteEnemic(RECURS_ENEMIC);
+            }
+        }
+    }
+
+    private void persegueix() {
+        if (estat.llançaments > 0) {
+            if (objPropers[RECURS_ALIAT] == null && objPropers[ESCUT] == null
+                    && objPropersSecDosTres[RECURS_ALIAT] == null && objPropersSecDosTres[ESCUT] == null
+                    && objPropers[AGENT_ENEMIC] != null) {
+                cercaTipusObjecte(AGENT_ENEMIC);
+            } else if (objPropers[RECURS_ALIAT] == null && objPropers[ESCUT] == null
+                    && objPropersSecDosTres[RECURS_ALIAT] == null && objPropersSecDosTres[ESCUT] == null
+                    && (objPropers[RECURS_ENEMIC] != null || objPropers[RECURS_ENEMIC] != null)) {
+                cercaTipusObjecte(RECURS_ENEMIC);
+            }
+        }
+    }
+
+    private void deteccioDisparEnemic() {
+        if (estat.llançamentEnemicDetectat && estat.escutActivat == false
+                && estat.escuts > 0 && estat.distanciaLlançamentEnemic < 100) {
+            activaEscut();
+        } else if (estat.impactesRebuts > impactes && estat.escutActivat == false
+                && estat.escuts > 0) {
+            impactes = estat.impactesRebuts;
+            activaEscut();
+        }
     }
 
     private void deteccioParet() {
@@ -147,7 +190,7 @@ public class Bitxo1 extends Agent {
         distMin[RECURS_ENEMIC] = 9999;
     }
 
-    private void objectesDistanciaMinima() {
+    private void cercaObjectesMesPropers() {
         for (Objecte obj : estat.objectes) {
             if (obj != null) {
                 int tipus = getTipusObjecte(obj);
@@ -181,8 +224,8 @@ public class Bitxo1 extends Agent {
         return RES;
     }
 
-    private void cercaRecursAliat() {
-        switch (objPropers[RECURS_ALIAT].agafaSector()) {
+    private void cercaTipusObjecte(int tipusObjecte) {
+        switch (objPropers[tipusObjecte].agafaSector()) {
             case 1:
                 gira(SECTOR1);
                 break;
@@ -190,10 +233,9 @@ public class Bitxo1 extends Agent {
                 gira(SECTOR4);
                 break;
             default:
-                mira(objPropers[RECURS_ALIAT]);
+                mira(objPropers[tipusObjecte]);
                 break;
         }
-        tipusLocalitzat = RECURS_ALIAT;
     }
 
     private void disparaObjecteEnemic(int tipusObj) {
@@ -207,57 +249,6 @@ public class Bitxo1 extends Agent {
                 gira(SECTOR4);
             }
             tipusLocalitzat = tipusObj;
-        }
-    }
-
-    private void deteccioObjectes() {
-        if (estat.veigAlgunRecurs || estat.veigAlgunEscut || estat.veigAlgunEnemic) {
-            initArrayObjectes();
-            objectesDistanciaMinima();
-            if (objPropers[RECURS_ALIAT] != null) {
-                cercaRecursAliat();
-            } else if (objPropersSecDosTres[ESCUT] != null) {
-                mira(objPropersSecDosTres[ESCUT]);
-            }
-            if (objPropers[AGENT_ENEMIC] != null && objPropers[AGENT_ENEMIC].agafaDistancia() < 250) {
-                disparaObjecteEnemic(AGENT_ENEMIC);
-            } else if (objPropers[RECURS_ENEMIC] != null && objPropers[RECURS_ENEMIC].agafaDistancia() < 400) {
-                disparaObjecteEnemic(RECURS_ENEMIC);
-            }
-        }
-    }
-
-    private void persegueix() {
-        if (estat.llançaments > 0) {
-            if (objPropers[RECURS_ALIAT] == null && objPropers[ESCUT] == null
-                    && objPropersSecDosTres[RECURS_ALIAT] == null && objPropersSecDosTres[ESCUT] == null
-                    && objPropers[AGENT_ENEMIC] != null) {
-                switch (objPropers[AGENT_ENEMIC].agafaSector()) {
-                    case 1:
-                        gira(SECTOR1);
-                        break;
-                    case 4:
-                        gira(SECTOR4);
-                        break;
-                    default:
-                        mira(objPropers[AGENT_ENEMIC]);
-                        break;
-                }
-            } else if (objPropers[RECURS_ALIAT] == null && objPropers[ESCUT] == null
-                    && objPropersSecDosTres[RECURS_ALIAT] == null && objPropersSecDosTres[ESCUT] == null
-                    && (objPropers[RECURS_ENEMIC] != null || objPropers[RECURS_ENEMIC] != null)) {
-                switch (objPropers[RECURS_ENEMIC].agafaSector()) {
-                    case 1:
-                        gira(SECTOR1);
-                        break;
-                    case 4:
-                        gira(SECTOR4);
-                        break;
-                    default:
-                        mira(objPropers[AGENT_ENEMIC]);
-                        break;
-                }
-            }
         }
     }
 
@@ -279,17 +270,6 @@ public class Bitxo1 extends Agent {
             return true;
         } else {
             return false;
-        }
-    }
-
-    private void deteccioDisparEnemic() {
-        if (estat.llançamentEnemicDetectat && estat.escutActivat == false
-                && estat.escuts > 0 && estat.distanciaLlançamentEnemic < 100) {
-            activaEscut();
-        } else if (estat.impactesRebuts > impactes && estat.escutActivat == false
-                && estat.escuts > 0) {
-            impactes = estat.impactesRebuts;
-            activaEscut();
         }
     }
 
