@@ -41,10 +41,10 @@ public class Bitxo2 extends Agent {
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(7, 4, 699, ANGLE, 56, 5, 0);
+        int cost = atributsAgent(6, 4, 699, ANGLE, 56, 5, 0);
         System.out.println("Cost total: " + cost);
 
-        repetir = impactes = darrer_gir = temps = 0;
+        repetir = impactes = darrer_gir = temps = 1;
         llançant = false;
         tipusLocalitzat = RES;
         accio = Accio.ENDAVANT;
@@ -55,6 +55,7 @@ public class Bitxo2 extends Agent {
 
     @Override
     public void avaluaComportament() {
+        //System.out.println(temps);
         estat = estatCombat();
         comprobarLlançament();
         if (tipusLocalitzat != RES) {
@@ -78,7 +79,7 @@ public class Bitxo2 extends Agent {
     private void comprobarLocalitzat() {
         if (tipusLocalitzat == AGENT_ENEMIC || tipusLocalitzat == RECURS_ENEMIC) {
             llançant = true;
-            temps = 10;
+            temps = 5;
         }
         mira(objPropers[tipusLocalitzat]);
         tipusLocalitzat = RES;
@@ -133,46 +134,43 @@ public class Bitxo2 extends Agent {
     private void deteccioParet() {
         if (estat.enCollisio) {
             //Si estic colisionant amb l'enemic per davant i me queden bales dispar
-            if (estat.objecteVisor[CENTRAL] == BITXO && estat.llançaments > 0 && temps > 0) {
+            if (estat.objecteVisor[CENTRAL] == BITXO && estat.llançaments > 0 && temps > 0 && estat.distanciaVisors[CENTRAL] < 10) {
                 llança();
                 temps = 10;
                 if (estat.escutActivat == false && estat.escuts > 0) {
                     activaEscut();
                 }
+            } else if (estat.objecteVisor[DRETA] == PARET && estat.distanciaVisors[DRETA] < 25) {
+                enrere();
+                accio = Accio.ESQUERRA;
+                repetir = 2;
+            } else if (estat.objecteVisor[ESQUERRA] == PARET && estat.distanciaVisors[ESQUERRA] < 25) {
+                enrere();
+                accio = Accio.DRETA;
+                repetir = 2;
             } else {
+                enrere();
                 accio = Accio.VOLTEJ;
                 repetir = 1;
             }
-        } else if (estat.distanciaVisors[CENTRAL] < 60
-                && estat.objecteVisor[CENTRAL] == PARET) {
-            if (random.nextBoolean()) {
+        } else if (estat.distanciaVisors[CENTRAL] < 50 && estat.objecteVisor[CENTRAL] == PARET) {
+            if (estat.objecteVisor[ESQUERRA] == PARET && estat.distanciaVisors[ESQUERRA] < estat.distanciaVisors[DRETA]) { //estat.distanciaVisors[ESQUERRA] < estat.distanciaVisors[CENTRAL] &&
                 accio = Accio.DRETA;
-            } else {
+                repetir = 2;
+            } else if (estat.objecteVisor[DRETA] == PARET && estat.distanciaVisors[DRETA] < estat.distanciaVisors[ESQUERRA]) { //estat.distanciaVisors[DRETA] < estat.distanciaVisors[CENTRAL] &&
                 accio = Accio.ESQUERRA;
+                repetir = 2;
             }
-            repetir = 3;
-        } else if (estat.distanciaVisors[ESQUERRA] < 25
-                && estat.objecteVisor[ESQUERRA] == PARET) {
-            if ((estat.distanciaVisors[ESQUERRA] <= estat.distanciaVisors[DRETA]) && estat.objecteVisor[DRETA] == PARET) {
+        } else if (estat.distanciaVisors[CENTRAL] > 50 && estat.distanciaVisors[CENTRAL] < 150 && estat.objecteVisor[CENTRAL] == PARET) {//por si el visor central está a mas de 50 pero yo me estoy acercando a la pared
+            if (estat.objecteVisor[ESQUERRA] == PARET && estat.distanciaVisors[ESQUERRA] < estat.distanciaVisors[DRETA]
+                    && estat.distanciaVisors[ESQUERRA] < 25) {
                 accio = Accio.DRETA;
-                repetir = 3;
-            } else if ((estat.distanciaVisors[ESQUERRA] < estat.distanciaVisors[DRETA]) && estat.objecteVisor[DRETA] == PARET) {
+                repetir = 2;
+            } else if (estat.objecteVisor[DRETA] == PARET && estat.distanciaVisors[DRETA] < estat.distanciaVisors[ESQUERRA]
+                    && estat.distanciaVisors[DRETA] < 25) {
                 accio = Accio.ESQUERRA;
-                repetir = 3;
+                repetir = 2;
             }
-            accio = Accio.DRETA;
-            repetir = 3;
-        } else if (estat.distanciaVisors[DRETA] < 25
-                && estat.objecteVisor[DRETA] == PARET) {
-            if ((estat.distanciaVisors[DRETA] <= estat.distanciaVisors[ESQUERRA]) && estat.objecteVisor[ESQUERRA] == PARET) {
-                accio = Accio.ESQUERRA;
-                repetir = 3;
-            } else if ((estat.distanciaVisors[DRETA] < estat.distanciaVisors[ESQUERRA]) && estat.objecteVisor[ESQUERRA] == PARET) {
-                accio = Accio.DRETA;
-                repetir = 3;
-            }
-            accio = Accio.ESQUERRA;
-            repetir = 3;
         } else {
             endavant();
         }
@@ -252,6 +250,7 @@ public class Bitxo2 extends Agent {
 
     private boolean repetirAccio() {
         if (repetir != 0) {
+            atura();
             switch (accio) {
                 case ESQUERRA:
                     darrer_gir = 10 + random.nextInt(10);
