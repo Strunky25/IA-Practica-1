@@ -41,7 +41,7 @@ public class Bitxo2 extends Agent {
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(5, 0, 699, ANGLE, 56, 5, 0);
+        int cost = atributsAgent(5, 4, 699, ANGLE, 56, 5, 0);
         System.out.println("Cost total: " + cost);
         // Inicialització de variables que utilitzaré al meu comportament
         repetir = impactes = 0;

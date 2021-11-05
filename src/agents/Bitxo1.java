@@ -41,18 +41,16 @@ public class Bitxo1 extends Agent {
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(5, 0, 699, ANGLE, 56, 5, 0);
+        int cost = atributsAgent(5, 4, 699, ANGLE, 56, 5, 0);
         System.out.println("Cost total: " + cost);
 
-        repetir = impactes = 0;
+        repetir = impactes = darrer_gir = 0;
         llançant = false;
         tipusLocalitzat = RES;
         accio = Accio.ENDAVANT;
         random = new Random();
-        objPropersSecDosTres = new Objecte[4];
-        objPropers = new Objecte[4];
-        distMinSecDosTres = new int[4];
-        distMin = new int[4];
+        objPropersSecDosTres = objPropers = new Objecte[4];
+        distMinSecDosTres = distMin = new int[4];
     }
 
     @Override
@@ -144,7 +142,6 @@ public class Bitxo1 extends Agent {
                 accio = Accio.VOLTEJ;
                 repetir = 1;
             }
-
         } else if (estat.distanciaVisors[CENTRAL] < 65
                 && estat.objecteVisor[CENTRAL] == PARET) {
             if (random.nextBoolean()) {
