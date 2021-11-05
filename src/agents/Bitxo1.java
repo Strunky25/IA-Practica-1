@@ -35,13 +35,13 @@ public class Bitxo1 extends Agent {
     private Accio accio;
 
     public Bitxo1(Agents pare) {
-        super(pare, "Bitxo 1", "imatges/robotank1.gif");
+        super(pare, "Bitxo 1", "imatges/calamardo1.gif");
     }
 
     @Override
     public void inicia() {
         // atributsAgents(v,w,dv,av,ll,es,hy)
-        int cost = atributsAgent(5, 4, 699, ANGLE, 56, 5, 0);
+        int cost = atributsAgent(5, 4, 699, ANGLE, 0, 5, 0);
         System.out.println("Cost total: " + cost);
 
         repetir = impactes = darrer_gir = 0;
@@ -65,7 +65,6 @@ public class Bitxo1 extends Agent {
             deteccioDisparEnemic();
             deteccioParet();
         }
-
     }
 
     private void comprobarLlançament() {
@@ -238,7 +237,7 @@ public class Bitxo1 extends Agent {
         if (objPropersSecDosTres[tipusObj] != null && estat.llançaments > 0) {
             mira(objPropersSecDosTres[tipusObj]);
             llançant = true;
-        } else if (tipusLocalitzat == RES) {
+        } else if (tipusLocalitzat == RES && estat.llançaments > 0) {
             if (objPropers[tipusObj].agafaSector() == 1) {
                 gira(SECTOR1);
             } else if (objPropers[tipusObj].agafaSector() == 4) {
